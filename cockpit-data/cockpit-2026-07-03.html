@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #4</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">July 3, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #4</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">11</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">6</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">3</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">16</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option>
+        <option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button>
+      <button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Investments">Investments</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="TPA">TPA</button><button class="chip" data-filter-type="vertical" data-value="FinTech">FinTech</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button><button class="chip" data-filter-type="vertical" data-value="Healthcare / Provider &amp; Clinical">Healthcare / Provider &amp; Clinical</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button>
+      <button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Technology &amp; AI">Technology &amp; AI</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-investments" class="toc-link">Investments</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-tpa" class="toc-link">TPA</a><a href="#v-fintech" class="toc-link">FinTech</a><a href="#v-brokertech" class="toc-link">BrokerTech</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance---payer" class="toc-link">Health Insurance / Payer</a><a href="#v-healthcare---provider-clinical" class="toc-link">Healthcare / Provider &amp; Clinical</a></nav>
+
+<main class="main" id="main">
+  
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Regulatory &amp; Policy" data-geo="UK/Europe"
+                 data-search="uk regulator's funded reinsurance crackdown could reshape bulk annuity deals the bank of england's prudential regulation authority is pushing ahead with consultation paper cp8/26, which would roughly double or more the capital insurers must hold against funded reinsurance used heavily in pension risk transfer deals; the consultation window closes july 31, 2026. funded reinsurance capital rules">
+          <div class="card-tags">
+            <span class="tag tag-topic">Funded Reinsurance Capital Rules</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-04-29</div>
+          <h3 class="card-headline">UK regulator's funded reinsurance crackdown could reshape bulk annuity deals</h3>
+          <p class="card-summary">The Bank of England's Prudential Regulation Authority is pushing ahead with Consultation Paper CP8/26, which would roughly double or more the capital insurers must hold against funded reinsurance used heavily in pension risk transfer deals; the consultation window closes July 31, 2026.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Business UK</span>
+            <a class="card-link" href="https://www.insurancebusinessmag.com/reinsurance/news/breaking-news/pra-moves-to-tighten-capital-rules-on-funded-reinsurance-573597.aspx" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-investments" data-vertical-section="Investments">
+      <div class="section-head">
+        <h2 class="section-title">Investments</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Investments" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="fidelity to bolt guaranteed lifetime income onto its target-date fund lineup fidelity is launching freedom lifetime, a suite of target-date collective investment trusts that let plan sponsors offer employees the option to convert part of their target-date balance into a guaranteed income stream, available on fidelity's recordkeeping platform in early 2027. guaranteed income tdf">
+          <div class="card-tags">
+            <span class="tag tag-topic">Guaranteed Income TDF</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-10</div>
+          <h3 class="card-headline">Fidelity to bolt guaranteed lifetime income onto its target-date fund lineup</h3>
+          <p class="card-summary">Fidelity is launching Freedom Lifetime, a suite of target-date collective investment trusts that let plan sponsors offer employees the option to convert part of their target-date balance into a guaranteed income stream, available on Fidelity's recordkeeping platform in early 2027.</p>
+          <div class="card-footer">
+            <span class="card-source">Business Wire</span>
+            <a class="card-link" href="https://www.businesswire.com/news/home/20260610197394/en/Fidelity-Investments-to-Expand-Target-Date-Lineup-With-Launch-of-Guaranteed-Income-Solution" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="M&amp;A" data-geo="United States"
+                 data-search="hightower's acquisitive signature wealth unit lands three more advisory teams worth $5 billion hightower's signature wealth division added private vista, hightower great lakes and the mcguirk &amp; de nevi group in a combined deal bringing roughly $5 billion in assets, pushing its year-to-date total past $25 billion added through conversions and acquisitions. ria roll-up deal">
+          <div class="card-tags">
+            <span class="tag tag-topic">RIA Roll-up Deal</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Hightower's acquisitive Signature Wealth unit lands three more advisory teams worth $5 billion</h3>
+          <p class="card-summary">Hightower's Signature Wealth division added Private Vista, Hightower Great Lakes and The McGuirk &amp; De Nevi Group in a combined deal bringing roughly $5 billion in assets, pushing its year-to-date total past $25 billion added through conversions and acquisitions.</p>
+          <div class="card-footer">
+            <span class="card-source">InvestmentNews</span>
+            <a class="card-link" href="https://www.investmentnews.com/ria-news/hightower-signature-wealth-adds-5-billion-in-deal-hat-trick/267291" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Wealth Management" data-lens="M&amp;A" data-geo="United States"
+                 data-search="wealth enhancement adds an 88-year-old new york advisory shop in a $760 million deal national ria aggregator wealth enhancement agreed to acquire the shufro-glass group from shufro rose, a firm founded in 1938, adding more than $760 million in client assets and pushing wealth enhancement's total assets above $157 billion. ria breakaway acquisition">
+          <div class="card-tags">
+            <span class="tag tag-topic">RIA Breakaway Acquisition</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-30</div>
+          <h3 class="card-headline">Wealth Enhancement adds an 88-year-old New York advisory shop in a $760 million deal</h3>
+          <p class="card-summary">National RIA aggregator Wealth Enhancement agreed to acquire the Shufro-Glass Group from Shufro Rose, a firm founded in 1938, adding more than $760 million in client assets and pushing Wealth Enhancement's total assets above $157 billion.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/wealth-enhancement-to-acquire-the-shufro-glass-group-of-shufro-rose-with-over-760-million-in-client-assets-302814088.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="new york rolls out fresh guidance aimed at bringing down auto insurance premiums governor hochul directed the state's department of financial services to issue new guidance implementing fy2027 budget reforms intended to lower new york auto insurance rates and crack down on fraudulent claims, effective july 1. auto insurance rate reform">
+          <div class="card-tags">
+            <span class="tag tag-topic">Auto Insurance Rate Reform</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">New York rolls out fresh guidance aimed at bringing down auto insurance premiums</h3>
+          <p class="card-summary">Governor Hochul directed the state's Department of Financial Services to issue new guidance implementing FY2027 budget reforms intended to lower New York auto insurance rates and crack down on fraudulent claims, effective July 1.</p>
+          <div class="card-footer">
+            <span class="card-source">Office of Governor Kathy Hochul</span>
+            <a class="card-link" href="https://www.governor.ny.gov/news/governor-hochul-issues-new-guidance-implement-reforms-aimed-lowering-auto-insurance-premiums" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="M&amp;A" data-geo="United States"
+                 data-search="allegheny health network's insurance parent finances hospital tie-up with $285 million pledge as heritage valley health system formally joined allegheny health network on july 1, insurer parent highmark and the merging systems jointly committed roughly $285 million over a decade to fund clinical and it upgrades, underscoring how payer-provider capital is intertwined in the deal. payer-backed hospital merger">
+          <div class="card-tags">
+            <span class="tag tag-topic">Payer-Backed Hospital Merger</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Allegheny Health Network's insurance parent finances hospital tie-up with $285 million pledge</h3>
+          <p class="card-summary">As Heritage Valley Health System formally joined Allegheny Health Network on July 1, insurer parent Highmark and the merging systems jointly committed roughly $285 million over a decade to fund clinical and IT upgrades, underscoring how payer-provider capital is intertwined in the deal.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/heritage-valley-health-system-enters-new-era-as-part-of-allegheny-health-network-302815526.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="Investments &amp; Funding" data-geo="United States"
+                 data-search="catastrophe-property mgu pulls in $460 million-plus as admitted carriers retreat from florida and texas a continuation vehicle led by lexington partners and barings poured more than $460 million into a catastrophe-exposed property managing general underwriter, capital meant to let it keep writing coverage in states where standard insurers are pulling back. cat property mgu capital">
+          <div class="card-tags">
+            <span class="tag tag-topic">Cat Property MGU Capital</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-05</div>
+          <h3 class="card-headline">Catastrophe-property MGU pulls in $460 million-plus as admitted carriers retreat from Florida and Texas</h3>
+          <p class="card-summary">A continuation vehicle led by Lexington Partners and Barings poured more than $460 million into a catastrophe-exposed property managing general underwriter, capital meant to let it keep writing coverage in states where standard insurers are pulling back.</p>
+          <div class="card-footer">
+            <span class="card-source">InsurTech.ME</span>
+            <a class="card-link" href="https://www.insurtech.me/blog/2026/7/5/insurance-insurtech-iinvestment-intelligence-report-week-of-june-28-july-4-202" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="Technology &amp; AI" data-geo="UK/Europe"
+                 data-search="lloyd's mga launches data-backed deductible buy-down cover for renewable energy sites africa speciality risks, a lloyd's mga, launched what it calls the world's first data-enabled deductible buy-down product for renewable energy assets, giving brokers independently verified real-time asset data to negotiate better underwriting terms. renewable energy mga product">
+          <div class="card-tags">
+            <span class="tag tag-topic">Renewable Energy MGA Product</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Lloyd's MGA launches data-backed deductible buy-down cover for renewable energy sites</h3>
+          <p class="card-summary">Africa Speciality Risks, a Lloyd's MGA, launched what it calls the world's first data-enabled deductible buy-down product for renewable energy assets, giving brokers independently verified real-time asset data to negotiate better underwriting terms.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Edge</span>
+            <a class="card-link" href="https://insurance-edge.net/2026/07/01/samp-risk-launches-deductible-buy-down-product/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="People &amp; Leadership" data-geo="UK/Europe"
+                 data-search="acrisure's uk arm loses its ceo and cfo/coo in abrupt leadership shake-up acrisure uk chief executive mark mcilquham and cfo/coo katherine cross both had their roles terminated, with interim leadership handed to andrew boyce and eleanor gamble as the broker platform's uk retail business regroups. broker leadership exit">
+          <div class="card-tags">
+            <span class="tag tag-topic">Broker Leadership Exit</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-06-19</div>
+          <h3 class="card-headline">Acrisure's UK arm loses its CEO and CFO/COO in abrupt leadership shake-up</h3>
+          <p class="card-summary">Acrisure UK chief executive Mark Mcilquham and CFO/COO Katherine Cross both had their roles terminated, with interim leadership handed to Andrew Boyce and Eleanor Gamble as the broker platform's UK retail business regroups.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Times</span>
+            <a class="card-link" href="https://www.insurancetimes.co.uk/news/acrisure-uk-chief-executive-and-cfo/coo-resign/1459019.article" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-tpa" data-vertical-section="TPA">
+      <div class="section-head">
+        <h2 class="section-title">TPA</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="TPA" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="dol's proposed pbm fee-disclosure rule set to reach tpas for plan years starting july 2026 a department of labor proposal would force pharmacy benefit managers and the tpas and insurers that administer pbm services for self-funded erisa health plans to make detailed compensation disclosures, with applicability proposed for plan years beginning on or after july 1, 2026. pbm disclosure rule">
+          <div class="card-tags">
+            <span class="tag tag-topic">PBM Disclosure Rule</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-01-30</div>
+          <h3 class="card-headline">DOL's proposed PBM fee-disclosure rule set to reach TPAs for plan years starting July 2026</h3>
+          <p class="card-summary">A Department of Labor proposal would force pharmacy benefit managers and the TPAs and insurers that administer PBM services for self-funded ERISA health plans to make detailed compensation disclosures, with applicability proposed for plan years beginning on or after July 1, 2026.</p>
+          <div class="card-footer">
+            <span class="card-source">U.S. Department of Labor / Federal Register</span>
+            <a class="card-link" href="https://www.federalregister.gov/documents/2026/01/30/2026-01907/improving-transparency-into-pharmacy-benefit-manager-fee-disclosure" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-fintech" data-vertical-section="FinTech">
+      <div class="section-head">
+        <h2 class="section-title">FinTech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="FinTech" data-lens="M&amp;A" data-geo="United States"
+                 data-search="matic scoops up policygenius' home and auto book alongside new pe backing embedded insurance platform matic secured a minority growth investment from primus capital while simultaneously acquiring nearly 30,000 property and casualty policies from policygenius, folding those customers into its 70-plus carrier marketplace. embedded insurance book deal">
+          <div class="card-tags">
+            <span class="tag tag-topic">Embedded Insurance Book Deal</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-24</div>
+          <h3 class="card-headline">Matic scoops up Policygenius' home and auto book alongside new PE backing</h3>
+          <p class="card-summary">Embedded insurance platform Matic secured a minority growth investment from Primus Capital while simultaneously acquiring nearly 30,000 property and casualty policies from Policygenius, folding those customers into its 70-plus carrier marketplace.</p>
+          <div class="card-footer">
+            <span class="card-source">GlobeNewswire</span>
+            <a class="card-link" href="https://www.globenewswire.com/news-release/2026/06/24/3317007/0/en/matic-secures-minority-investment-from-primus-capital-and-acquires-policygenius-property-and-casualty-insurance-book.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokertech" data-vertical-section="BrokerTech">
+      <div class="section-head">
+        <h2 class="section-title">BrokerTech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="BrokerTech" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="vertafore rolls out ai agents to automate agency email and reconciliation work vertafore released two new velocity ai agents built into its agencyone platform, one handling inbound email triage and one automating reconciliation, with early testing showing up to 80% faster email processing for independent agencies. agency ai automation">
+          <div class="card-tags">
+            <span class="tag tag-topic">Agency AI Automation</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Vertafore rolls out AI agents to automate agency email and reconciliation work</h3>
+          <p class="card-summary">Vertafore released two new Velocity AI agents built into its AgencyOne platform, one handling inbound email triage and one automating reconciliation, with early testing showing up to 80% faster email processing for independent agencies.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Edge</span>
+            <a class="card-link" href="https://insurance-edge.net/2026/07/01/vertafore-releases-two-velocity-ai-agents/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="Investments &amp; Funding" data-geo="India"
+                 data-search="bengaluru cyber-insurance startup mitigata raises $15 million series b led by bessemer mitigata, which combines cybersecurity monitoring with cyber insurance for indian businesses, closed a $15 million series b led by bessemer venture partners to expand internationally and scale its ai-powered security operations center. india cyber insurtech funding">
+          <div class="card-tags">
+            <span class="tag tag-topic">India Cyber Insurtech Funding</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-06-23</div>
+          <h3 class="card-headline">Bengaluru cyber-insurance startup Mitigata raises $15 million Series B led by Bessemer</h3>
+          <p class="card-summary">Mitigata, which combines cybersecurity monitoring with cyber insurance for Indian businesses, closed a $15 million Series B led by Bessemer Venture Partners to expand internationally and scale its AI-powered security operations center.</p>
+          <div class="card-footer">
+            <span class="card-source">Business Standard</span>
+            <a class="card-link" href="https://www.business-standard.com/companies/start-ups/cybersecurity-startup-mitigata-raises-15-mn-in-bessemer-led-series-b-round-126062301118_1.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-health-insurance---payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="new york's essential plan cliff hits roughly 450,000 immigrant enrollees this month about 450,000 new yorkers, largely lawfully present immigrants, lost essential plan coverage as of july 1 after federal budget law changes eliminated their aca subsidy eligibility, pushing them onto marketplace plans with premiums and cost-sharing. aca coverage cliff">
+          <div class="card-tags">
+            <span class="tag tag-topic">ACA Coverage Cliff</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">New York's Essential Plan cliff hits roughly 450,000 immigrant enrollees this month</h3>
+          <p class="card-summary">About 450,000 New Yorkers, largely lawfully present immigrants, lost Essential Plan coverage as of July 1 after federal budget law changes eliminated their ACA subsidy eligibility, pushing them onto marketplace plans with premiums and cost-sharing.</p>
+          <div class="card-footer">
+            <span class="card-source">Fiscal Policy Institute</span>
+            <a class="card-link" href="https://fiscalpolicy.org/regional-impacts-of-the-july-2026-essential-plan-cliff" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Investments &amp; Funding" data-geo="United States"
+                 data-search="value-based medicare tech firm pearl health raises $110 million to expand payer partnerships pearl health closed a $110 million raise, a $50 million equity round led by andreessen horowitz plus a $60 million credit facility, to grow its ai clinical intelligence platform used by providers and payers managing medicare risk contracts. medicare value-based care funding">
+          <div class="card-tags">
+            <span class="tag tag-topic">Medicare Value-Based Care Funding</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Value-based Medicare tech firm Pearl Health raises $110 million to expand payer partnerships</h3>
+          <p class="card-summary">Pearl Health closed a $110 million raise, a $50 million equity round led by Andreessen Horowitz plus a $60 million credit facility, to grow its AI clinical intelligence platform used by providers and payers managing Medicare risk contracts.</p>
+          <div class="card-footer">
+            <span class="card-source">Axios</span>
+            <a class="card-link" href="https://www.axios.com/pro/health-tech-deals/2026/07/07/pearl-health-raise-medicare-tech" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-healthcare---provider-clinical" data-vertical-section="Healthcare / Provider &amp; Clinical">
+      <div class="section-head">
+        <h2 class="section-title">Healthcare / Provider &amp; Clinical</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Market Economics" data-geo="United States"
+                 data-search="us age-adjusted death rate hits a record low as cdc releases fresh 2025 data provisional cdc data published july 2 showed the nation's age-adjusted death rate fell 4.6% in 2025 to 689.2 per 100,000 people, the lowest rate ever recorded, a data point providers and payers are citing in mortality and underwriting trend discussions. mortality trend data">
+          <div class="card-tags">
+            <span class="tag tag-topic">Mortality Trend Data</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-02</div>
+          <h3 class="card-headline">US age-adjusted death rate hits a record low as CDC releases fresh 2025 data</h3>
+          <p class="card-summary">Provisional CDC data published July 2 showed the nation's age-adjusted death rate fell 4.6% in 2025 to 689.2 per 100,000 people, the lowest rate ever recorded, a data point providers and payers are citing in mortality and underwriting trend discussions.</p>
+          <div class="card-footer">
+            <span class="card-source">Alston &amp; Bird (Health Care Week in Review)</span>
+            <a class="card-link" href="https://www.alston.com/en/insights/publications/2026/07/health-care-week-in-review-july-2-2026" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>

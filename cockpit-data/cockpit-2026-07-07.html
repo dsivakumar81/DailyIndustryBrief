@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #8</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">July 7, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #8</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">9</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">6</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">5</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">19</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option>
+        <option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option><option value="APAC">APAC</option><option value="Global">Global</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button>
+      <button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="TPA">TPA</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button><button class="chip" data-filter-type="vertical" data-value="Healthcare / Provider &amp; Clinical">Healthcare / Provider &amp; Clinical</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button>
+      <button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Technology &amp; AI">Technology &amp; AI</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-tpa" class="toc-link">TPA</a><a href="#v-brokertech" class="toc-link">BrokerTech</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance---payer" class="toc-link">Health Insurance / Payer</a><a href="#v-healthcare---provider-clinical" class="toc-link">Healthcare / Provider &amp; Clinical</a></nav>
+
+<main class="main" id="main">
+  
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Regulatory &amp; Policy" data-geo="India"
+                 data-search="india's insurance regulator floats spreading agent commissions across a policy's full life irdai is considering replacing large upfront commissions with payouts spread over the life of a policy to curb mis-selling, with a distribution consultation paper expected by end of july according to chairman ajay seth. commission structure reform">
+          <div class="card-tags">
+            <span class="tag tag-topic">Commission Structure Reform</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">India's insurance regulator floats spreading agent commissions across a policy's full life</h3>
+          <p class="card-summary">IRDAI is considering replacing large upfront commissions with payouts spread over the life of a policy to curb mis-selling, with a distribution consultation paper expected by end of July according to chairman Ajay Seth.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance News BD</span>
+            <a class="card-link" href="https://eng.insurancenewsbd.com/article/news/6707" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="People &amp; Leadership" data-geo="United States"
+                 data-search="steward partners taps sequoia financial's joseph glick as new coo steward partners, which now oversees more than $53 billion in assets, hired joseph glick away from sequoia financial group to run operations, technology and finance as the firm scales. wealth firm leadership hire">
+          <div class="card-tags">
+            <span class="tag tag-topic">Wealth Firm Leadership Hire</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-06</div>
+          <h3 class="card-headline">Steward Partners taps Sequoia Financial's Joseph Glick as new COO</h3>
+          <p class="card-summary">Steward Partners, which now oversees more than $53 billion in assets, hired Joseph Glick away from Sequoia Financial Group to run operations, technology and finance as the firm scales.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="http://www.prnewswire.com/news-releases/steward-partners-appoints-joseph-glick-as-chief-operating-officer-positioning-the-firm-for-its-next-phase-of-growth-302818560.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Wealth Management" data-lens="M&amp;A" data-geo="United States"
+                 data-search="hybrid ria ameriflex reaches its $3 billion growth target six months ahead of schedule the ameriflex group added 18 advisors and more than $1.7 billion in client assets in the first half of 2026, crediting succession-matching tools for pulling forward its annual growth goal. hybrid ria growth">
+          <div class="card-tags">
+            <span class="tag tag-topic">Hybrid RIA Growth</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Hybrid RIA AmeriFlex reaches its $3 billion growth target six months ahead of schedule</h3>
+          <p class="card-summary">The AmeriFlex Group added 18 advisors and more than $1.7 billion in client assets in the first half of 2026, crediting succession-matching tools for pulling forward its annual growth goal.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/the-ameriflex-group-adds-more-than-1-7-billion-in-total-client-assets-in-first-half-2026--302817331.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="United States"
+                 data-search="us p&amp;c insurers swing to $16.3 billion underwriting gain in strongest q1 in decades the us property-casualty industry posted a $16.3 billion net underwriting gain in q1 2026, reversing a year-earlier loss on lower catastrophe losses and easing incurred-loss trends, according to am best data. underwriting profit rebound">
+          <div class="card-tags">
+            <span class="tag tag-topic">Underwriting Profit Rebound</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-23</div>
+          <h3 class="card-headline">US P&amp;C insurers swing to $16.3 billion underwriting gain in strongest Q1 in decades</h3>
+          <p class="card-summary">The US property-casualty industry posted a $16.3 billion net underwriting gain in Q1 2026, reversing a year-earlier loss on lower catastrophe losses and easing incurred-loss trends, according to AM Best data.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/national/2026/06/23/874936.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Regulatory &amp; Policy" data-geo="UK/Europe"
+                 data-search="uk underwriting body warns dealmakers are leaning too hard on cyber cover the international underwriting association cautioned that warranty-and-indemnity insurers may be over-relying on cyber insurance to cover m&amp;a transaction risk, flagging coverage gaps underwriters need to address. cyber coverage gaps">
+          <div class="card-tags">
+            <span class="tag tag-topic">Cyber Coverage Gaps</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-02</div>
+          <h3 class="card-headline">UK underwriting body warns dealmakers are leaning too hard on cyber cover</h3>
+          <p class="card-summary">The International Underwriting Association cautioned that warranty-and-indemnity insurers may be over-relying on cyber insurance to cover M&amp;A transaction risk, flagging coverage gaps underwriters need to address.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance-Edge</span>
+            <a class="card-link" href="https://insurance-edge.net/2026/07/02/iua-warns-on-over-reliance-on-cyber-insurance/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="UK/Europe"
+                 data-search="pen underwriting doubles uk sme cyber cover to £10 million as broker demand rises mga pen underwriting raised its cyber cover limit to £10 million for risks incepting from july 1 and brought claims handling in-house, responding to broker demand from larger sme clients. sme cyber limit increase">
+          <div class="card-tags">
+            <span class="tag tag-topic">SME Cyber Limit Increase</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-06-08</div>
+          <h3 class="card-headline">Pen Underwriting doubles UK SME cyber cover to £10 million as broker demand rises</h3>
+          <p class="card-summary">MGA Pen Underwriting raised its cyber cover limit to £10 million for risks incepting from July 1 and brought claims handling in-house, responding to broker demand from larger SME clients.</p>
+          <div class="card-footer">
+            <span class="card-source">The Insurer</span>
+            <a class="card-link" href="https://www.theinsurer.com/cyber-risk/news/pen-underwriting-doubles-uk-sme-cyber-cover-limit-2026-06-08/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">4 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="M&amp;A" data-geo="UK/Europe"
+                 data-search="specialist risk group snaps up london mga and wholesale broker superian srg acquired superian insurance group, a london wholesaler, retailer and mga known for medical malpractice and healthcare liability expertise, expanding srg's specialist distribution capacity. mga acquisition">
+          <div class="card-tags">
+            <span class="tag tag-topic">MGA Acquisition</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-02</div>
+          <h3 class="card-headline">Specialist Risk Group snaps up London MGA and wholesale broker Superian</h3>
+          <p class="card-summary">SRG acquired Superian Insurance Group, a London wholesaler, retailer and MGA known for medical malpractice and healthcare liability expertise, expanding SRG's specialist distribution capacity.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/international/2026/07/02/876112.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="People &amp; Leadership" data-geo="Global"
+                 data-search="liberty mutual elevates defne turkes to lead its international insurance division liberty mutual named defne turkes president and managing director of liberty international insurance effective july 1, tasking her with growth across commercial and asia retail markets. global insurer leadership move">
+          <div class="card-tags">
+            <span class="tag tag-topic">Global Insurer Leadership Move</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Liberty Mutual elevates Defne Turkes to lead its international insurance division</h3>
+          <p class="card-summary">Liberty Mutual named Defne Turkes president and managing director of Liberty International Insurance effective July 1, tasking her with growth across commercial and Asia retail markets.</p>
+          <div class="card-footer">
+            <span class="card-source">Risk &amp; Insurance</span>
+            <a class="card-link" href="https://riskandinsurance.com/defne-turkes-appointed-president-and-managing-director-of-liberty-international-insurance/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="People &amp; Leadership" data-geo="Global"
+                 data-search="aon installs pedro penalva as new ceo of latin america aon named pedro penalva ceo of latin america effective july 1, reporting directly to ceo greg case, as part of a broader regional leadership reshuffle spanning emea and latin america. broker regional leadership">
+          <div class="card-tags">
+            <span class="tag tag-topic">Broker Regional Leadership</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-05-19</div>
+          <h3 class="card-headline">Aon installs Pedro Penalva as new CEO of Latin America</h3>
+          <p class="card-summary">Aon named Pedro Penalva CEO of Latin America effective July 1, reporting directly to CEO Greg Case, as part of a broader regional leadership reshuffle spanning EMEA and Latin America.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/international/2026/05/19/870599.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="Investments &amp; Funding" data-geo="United States"
+                 data-search="mga platform novel financial holdings lands strategic backing from flexpoint ford novel financial holdings, which oversees carriers writing about $2 billion in annual premium tied to managing general underwriters, received a growth investment from private equity firm flexpoint ford. mga platform investment">
+          <div class="card-tags">
+            <span class="tag tag-topic">MGA Platform Investment</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-22</div>
+          <h3 class="card-headline">MGA platform Novel Financial Holdings lands strategic backing from Flexpoint Ford</h3>
+          <p class="card-summary">Novel Financial Holdings, which oversees carriers writing about $2 billion in annual premium tied to managing general underwriters, received a growth investment from private equity firm Flexpoint Ford.</p>
+          <div class="card-footer">
+            <span class="card-source">The Insurer</span>
+            <a class="card-link" href="https://www.theinsurer.com/program-manager/news/flexpoint-ford-invests-in-bredahl-led-novel-financial-holdings-2026-06-22/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-tpa" data-vertical-section="TPA">
+      <div class="section-head">
+        <h2 class="section-title">TPA</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="TPA" data-lens="People &amp; Leadership" data-geo="United States"
+                 data-search="point32health's tpa arm hpi names tim o'brien as president health plans, inc., a national third-party administrator of self-funded benefit plans, appointed tim o'brien president, bringing experience from leading vitori health through its sale to global excel management. tpa leadership appointment">
+          <div class="card-tags">
+            <span class="tag tag-topic">TPA Leadership Appointment</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-23</div>
+          <h3 class="card-headline">Point32Health's TPA arm HPI names Tim O'Brien as president</h3>
+          <p class="card-summary">Health Plans, Inc., a national third-party administrator of self-funded benefit plans, appointed Tim O'Brien president, bringing experience from leading Vitori Health through its sale to Global Excel Management.</p>
+          <div class="card-footer">
+            <span class="card-source">PRWeb</span>
+            <a class="card-link" href="https://www.prweb.com/releases/tim-obrien-to-lead-health-plans-inc-hpi-as-president-302805130.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokertech" data-vertical-section="BrokerTech">
+      <div class="section-head">
+        <h2 class="section-title">BrokerTech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="BrokerTech" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="independent agency barge group consolidates quoting on ezlynx's rating platform barge group adopted ezlynx's integrated personal-lines rater to enter risk data once and pull real-time quotes from multiple carriers, aiming to speed proposals and free up time for prospecting. agency rating platform adoption">
+          <div class="card-tags">
+            <span class="tag tag-topic">Agency Rating Platform Adoption</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Independent agency Barge Group consolidates quoting on EZLynx's rating platform</h3>
+          <p class="card-summary">Barge Group adopted EZLynx's integrated personal-lines rater to enter risk data once and pull real-time quotes from multiple carriers, aiming to speed proposals and free up time for prospecting.</p>
+          <div class="card-footer">
+            <span class="card-source">GlobeNewswire (via Manila Times)</span>
+            <a class="card-link" href="https://www.manilatimes.net/2026/07/07/tmt-newswire/globenewswire/barge-group-selects-ezlynx-to-accelerate-quoting-and-win-more-business/2379986" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="insurance journal previews industry 'demo day' showcasing agentic ai underwriting tools insurance journal spotlighted an upcoming risky future event where vendors will demo agentic ai tools built for underwriting, part of a broader industry push to move ai pilots into production for policy pricing. agentic ai underwriting">
+          <div class="card-tags">
+            <span class="tag tag-topic">Agentic AI Underwriting</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Insurance Journal previews industry 'Demo Day' showcasing agentic AI underwriting tools</h3>
+          <p class="card-summary">Insurance Journal spotlighted an upcoming Risky Future event where vendors will demo agentic AI tools built for underwriting, part of a broader industry push to move AI pilots into production for policy pricing.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/national/2026/07/07/876352.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="People &amp; Leadership" data-geo="United States"
+                 data-search="claims-communication insurtech kyber named a 2026 propertycasualty360 insurance luminary kyber was recognized in propertycasualty360's 2026 insurance luminaries class for workplace culture, with founder and ceo arvind sontha honored as rising star of the year. insurtech industry recognition">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurtech Industry Recognition</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Claims-communication insurtech Kyber named a 2026 PropertyCasualty360 Insurance Luminary</h3>
+          <p class="card-summary">Kyber was recognized in PropertyCasualty360's 2026 Insurance Luminaries class for workplace culture, with founder and CEO Arvind Sontha honored as Rising Star of the Year.</p>
+          <div class="card-footer">
+            <span class="card-source">EIN Presswire</span>
+            <a class="card-link" href="https://tech.einnews.com/pr_news/924853969/kyber-selected-as-a-propertycasualty360-2026-insurance-luminaries-winner" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="Regulatory &amp; Policy" data-geo="APAC"
+                 data-search="china issues first nationwide ai rulebook for banks and insurers china's national financial regulatory administration published guidelines spanning governance, data handling and risk management for ai use across the banking and insurance sectors, its first comprehensive framework of its kind. ai governance framework">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Governance Framework</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-06-18</div>
+          <h3 class="card-headline">China issues first nationwide AI rulebook for banks and insurers</h3>
+          <p class="card-summary">China's National Financial Regulatory Administration published guidelines spanning governance, data handling and risk management for AI use across the banking and insurance sectors, its first comprehensive framework of its kind.</p>
+          <div class="card-footer">
+            <span class="card-source">The Asian Banker</span>
+            <a class="card-link" href="https://www.theasianbanker.com/updates-and-articles/pboc-s-ai-finance-strategy-signals-china-s-next-phase-of-fintech-reform" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-health-insurance---payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States"
+                 data-search="medicare's $50-a-month glp-1 weight-loss drug bridge takes effect july 1 medicare part d beneficiaries meeting bmi and health-condition criteria can now access glp-1 obesity medications like wegovy and zepbound for $50 a month through 2027 under a new cms pilot tied to manufacturer pricing deals. medicare glp-1 pricing">
+          <div class="card-tags">
+            <span class="tag tag-topic">Medicare GLP-1 Pricing</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Medicare's $50-a-month GLP-1 weight-loss drug bridge takes effect July 1</h3>
+          <p class="card-summary">Medicare Part D beneficiaries meeting BMI and health-condition criteria can now access GLP-1 obesity medications like Wegovy and Zepbound for $50 a month through 2027 under a new CMS pilot tied to manufacturer pricing deals.</p>
+          <div class="card-footer">
+            <span class="card-source">AARP</span>
+            <a class="card-link" href="https://www.aarp.org/medicare/glp1-weight-loss-copay-program/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States"
+                 data-search="payer stocks extend rally as unitedhealth and centene guidance eases cost-trend fears unitedhealth shares have climbed roughly 78% off their yearly low after centene's stronger-than-expected medical loss ratio followed similar upbeat signals from unitedhealth and elevance, prompting analyst upgrades ahead of q2 earnings. payer stock rally">
+          <div class="card-tags">
+            <span class="tag tag-topic">Payer Stock Rally</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-30</div>
+          <h3 class="card-headline">Payer stocks extend rally as UnitedHealth and Centene guidance eases cost-trend fears</h3>
+          <p class="card-summary">UnitedHealth shares have climbed roughly 78% off their yearly low after Centene's stronger-than-expected medical loss ratio followed similar upbeat signals from UnitedHealth and Elevance, prompting analyst upgrades ahead of Q2 earnings.</p>
+          <div class="card-footer">
+            <span class="card-source">Invezz</span>
+            <a class="card-link" href="https://invezz.com/news/2026/06/30/up-by-80-does-the-unitedhealth-group-have-more-upside/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-healthcare---provider-clinical" data-vertical-section="Healthcare / Provider &amp; Clinical">
+      <div class="section-head">
+        <h2 class="section-title">Healthcare / Provider &amp; Clinical</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Market Economics" data-geo="UK/Europe"
+                 data-search="nhs delayed hospital discharges now cost £2.7 billion a year, king's fund finds analysis from the king's fund shows the cost of patients stuck in hospital beds despite being medically fit for discharge rose 7.5% in a year, driven by strained social care and community services capacity. nhs discharge bottleneck">
+          <div class="card-tags">
+            <span class="tag tag-topic">NHS Discharge Bottleneck</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">NHS delayed hospital discharges now cost £2.7 billion a year, King's Fund finds</h3>
+          <p class="card-summary">Analysis from the King's Fund shows the cost of patients stuck in hospital beds despite being medically fit for discharge rose 7.5% in a year, driven by strained social care and community services capacity.</p>
+          <div class="card-footer">
+            <span class="card-source">Clinical Services Journal</span>
+            <a class="card-link" href="https://www.clinicalservicesjournal.com/story/51973/delayed-discharges-cost-to-nhs-rises-7-5-to-2-7bn" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Technology &amp; AI" data-geo="UK/Europe"
+                 data-search="nice greenlights two non-invasive tests to cut years-long endometriosis diagnosis delays nice recommended nhs use of endotest, a saliva-based biomarker test, and endosure, a gut-signal sensor test, for a three-year evidence-gathering period aimed at speeding endometriosis diagnosis in primary care. diagnostic technology approval">
+          <div class="card-tags">
+            <span class="tag tag-topic">Diagnostic Technology Approval</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">NICE greenlights two non-invasive tests to cut years-long endometriosis diagnosis delays</h3>
+          <p class="card-summary">NICE recommended NHS use of Endotest, a saliva-based biomarker test, and EndoSure, a gut-signal sensor test, for a three-year evidence-gathering period aimed at speeding endometriosis diagnosis in primary care.</p>
+          <div class="card-footer">
+            <span class="card-source">NICE</span>
+            <a class="card-link" href="https://www.nice.org.uk/news/articles/new-technologies-for-endometriosis-diagnosis-in-primary-care" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>

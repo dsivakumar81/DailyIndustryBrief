@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #7</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">July 6, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #7</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">9</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">5</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">4</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">14</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option>
+        <option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option><option value="APAC">APAC</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button>
+      <button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="TPA">TPA</button><button class="chip" data-filter-type="vertical" data-value="FinTech">FinTech</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button>
+      <button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-tpa" class="toc-link">TPA</a><a href="#v-fintech" class="toc-link">FinTech</a><a href="#v-brokertech" class="toc-link">BrokerTech</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance---payer" class="toc-link">Health Insurance / Payer</a></nav>
+
+<main class="main" id="main">
+  
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Market Economics" data-geo="United States"
+                 data-search="massmutual climbs to no. 100 on fortune 500 in its 175th anniversary year massmutual announced it rose to no. 100 on the 2026 fortune 500 list, extending a streak of more than three decades on the ranking as the mutual insurer marks 175 years in business. fortune 500 milestone">
+          <div class="card-tags">
+            <span class="tag tag-topic">Fortune 500 Milestone</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">MassMutual climbs to No. 100 on Fortune 500 in its 175th anniversary year</h3>
+          <p class="card-summary">MassMutual announced it rose to No. 100 on the 2026 Fortune 500 list, extending a streak of more than three decades on the ranking as the mutual insurer marks 175 years in business.</p>
+          <div class="card-footer">
+            <span class="card-source">Business Wire</span>
+            <a class="card-link" href="https://www.businesswire.com/news/home/20260701497961/en/MassMutual-Ranks-No.-100-on-the-2026-Fortune-500-List" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="M&amp;A" data-geo="United States"
+                 data-search="wealth enhancement scoops up second shufro rose team with $554 million in assets wealth enhancement agreed to acquire the kaminsky-silverman group from new york-based shufro rose, its second deal with the firm in as many months, adding roughly $554 million in client assets. ria team acquisition">
+          <div class="card-tags">
+            <span class="tag tag-topic">RIA Team Acquisition</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-02</div>
+          <h3 class="card-headline">Wealth Enhancement scoops up second Shufro Rose team with $554 million in assets</h3>
+          <p class="card-summary">Wealth Enhancement agreed to acquire the Kaminsky-Silverman Group from New York-based Shufro Rose, its second deal with the firm in as many months, adding roughly $554 million in client assets.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/wealth-enhancement-to-acquire-the-kaminsky-silverman-group-of-shufro-rose-with-over-554-million-in-client-assets-302816466.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="M&amp;A" data-geo="UK/Europe"
+                 data-search="softening p&amp;c market fuels fresh megadeal speculation, with zurich-beazley as bellwether dealmakers point to zurich's $10.9 billion all-cash agreement to acquire lloyd's insurer beazley as a sign more billion-dollar-plus insurance acquisitions could surface in the second half of 2026 as underwriting conditions soften. megadeal speculation">
+          <div class="card-tags">
+            <span class="tag tag-topic">Megadeal Speculation</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">Softening P&amp;C market fuels fresh megadeal speculation, with Zurich-Beazley as bellwether</h3>
+          <p class="card-summary">Dealmakers point to Zurich's $10.9 billion all-cash agreement to acquire Lloyd's insurer Beazley as a sign more billion-dollar-plus insurance acquisitions could surface in the second half of 2026 as underwriting conditions soften.</p>
+          <div class="card-footer">
+            <span class="card-source">The Insurer</span>
+            <a class="card-link" href="https://www.theinsurer.com/ti/news/ma-talk-builds-as-market-softens-2026-07-03/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="United States"
+                 data-search="property catastrophe reinsurance rates fall as much as 20% at mid-year florida renewals record capital from traditional and alternative sources pushed risk-adjusted property-catastrophe reinsurance pricing down roughly 15-20% at the june/july renewals, even as florida cedents sought billions more in coverage. cat reinsurance renewal">
+          <div class="card-tags">
+            <span class="tag tag-topic">Cat Reinsurance Renewal</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Property catastrophe reinsurance rates fall as much as 20% at mid-year Florida renewals</h3>
+          <p class="card-summary">Record capital from traditional and alternative sources pushed risk-adjusted property-catastrophe reinsurance pricing down roughly 15-20% at the June/July renewals, even as Florida cedents sought billions more in coverage.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Business Magazine</span>
+            <a class="card-link" href="https://www.insurancebusinessmag.com/reinsurance/news/breaking-news/record-capital-drives-softer-reinsurance-pricing-at-july-renewals-580902.aspx" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Regulatory &amp; Policy" data-geo="APAC"
+                 data-search="singapore regulator floats protected cell company framework for alternative risk transfer the monetary authority of singapore opened a consultation on a new protected cell company legislative structure meant to deepen alternative risk transfer and collateralized reinsurance activity in the city-state. alternative risk transfer framework">
+          <div class="card-tags">
+            <span class="tag tag-topic">Alternative Risk Transfer Framework</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Singapore regulator floats protected cell company framework for alternative risk transfer</h3>
+          <p class="card-summary">The Monetary Authority of Singapore opened a consultation on a new Protected Cell Company legislative structure meant to deepen alternative risk transfer and collateralized reinsurance activity in the city-state.</p>
+          <div class="card-footer">
+            <span class="card-source">Monetary Authority of Singapore</span>
+            <a class="card-link" href="https://www.mas.gov.sg/news/media-releases/2026/mas-consults-on-pcc-framework-to-support-growth-of-alternative-risk-transfer-solutions-in-insurance" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="M&amp;A" data-geo="United States"
+                 data-search="acrisure folds six specialty mgas into new asero insurance services brand acrisure launched asero insurance services to unify several of its program administrators, which collectively underwrite over $1 billion in premium for hard-to-place commercial risks, under one shared platform. mga platform consolidation">
+          <div class="card-tags">
+            <span class="tag tag-topic">MGA Platform Consolidation</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-30</div>
+          <h3 class="card-headline">Acrisure folds six specialty MGAs into new Asero Insurance Services brand</h3>
+          <p class="card-summary">Acrisure launched Asero Insurance Services to unify several of its program administrators, which collectively underwrite over $1 billion in premium for hard-to-place commercial risks, under one shared platform.</p>
+          <div class="card-footer">
+            <span class="card-source">Business Wire</span>
+            <a class="card-link" href="https://www.businesswire.com/news/home/20260630604248/en/Acrisure-Introduces-Asero-Insurance-Services-Combining-Specialty-MGAs-under-a-Unified-Brand" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="People &amp; Leadership" data-geo="UK/Europe"
+                 data-search="cfc recruits former direct line chief adam winslow as group ceo specialty mga cfc named adam winslow, formerly group ceo of direct line group, as its next chief executive, succeeding louise o'shea as the company looks to accelerate international growth and ai adoption. mga ceo appointment">
+          <div class="card-tags">
+            <span class="tag tag-topic">MGA CEO Appointment</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">CFC recruits former Direct Line chief Adam Winslow as group CEO</h3>
+          <p class="card-summary">Specialty MGA CFC named Adam Winslow, formerly group CEO of Direct Line Group, as its next chief executive, succeeding Louise O'Shea as the company looks to accelerate international growth and AI adoption.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/international/2026/07/07/876432.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-tpa" data-vertical-section="TPA">
+      <div class="section-head">
+        <h2 class="section-title">TPA</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="TPA" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="virginia's tougher pbm and tpa oversight law takes effect a new virginia law effective july 1, 2026 expands regulation of pbms and third-party administrators, banning practices like retroactive claim reductions and electronic claim-processing fees while mandating pass-through pricing. tpa regulatory crackdown">
+          <div class="card-tags">
+            <span class="tag tag-topic">TPA Regulatory Crackdown</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Virginia's tougher PBM and TPA oversight law takes effect</h3>
+          <p class="card-summary">A new Virginia law effective July 1, 2026 expands regulation of PBMs and third-party administrators, banning practices like retroactive claim reductions and electronic claim-processing fees while mandating pass-through pricing.</p>
+          <div class="card-footer">
+            <span class="card-source">Mintz</span>
+            <a class="card-link" href="https://www.mintz.com/insights-center/viewpoints/2146/2026-04-09-states-continue-advance-new-pbm-and-drug-pricing" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-fintech" data-vertical-section="FinTech">
+      <div class="section-head">
+        <h2 class="section-title">FinTech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="FinTech" data-lens="Investments &amp; Funding" data-geo="India"
+                 data-search="bengaluru cyber insurance startup mitigata lands $15 million series b mitigata, an irdai-regulated cyber insurance broker, raised a $15 million series b led by bessemer venture partners to expand its ai-powered cyber resilience platform internationally and scale its security operations center. cyber insurance funding">
+          <div class="card-tags">
+            <span class="tag tag-topic">Cyber Insurance Funding</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-06-24</div>
+          <h3 class="card-headline">Bengaluru cyber insurance startup Mitigata lands $15 million Series B</h3>
+          <p class="card-summary">Mitigata, an IRDAI-regulated cyber insurance broker, raised a $15 million Series B led by Bessemer Venture Partners to expand its AI-powered cyber resilience platform internationally and scale its security operations center.</p>
+          <div class="card-footer">
+            <span class="card-source">Inc42</span>
+            <a class="card-link" href="https://inc42.com/buzz/cyber-risk-and-insurance-startup-mitigata-raises-15-mn/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokertech" data-vertical-section="BrokerTech">
+      <div class="section-head">
+        <h2 class="section-title">BrokerTech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="BrokerTech" data-lens="M&amp;A" data-geo="United States"
+                 data-search="matic buys policygenius's 30,000-policy home and auto book, adds primus capital as investor embedded insurance platform matic acquired policygenius's property and casualty insurance portfolio of nearly 30,000 policies and secured a minority growth investment from primus capital to fund further expansion. embedded insurance acquisition">
+          <div class="card-tags">
+            <span class="tag tag-topic">Embedded Insurance Acquisition</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-24</div>
+          <h3 class="card-headline">Matic buys Policygenius's 30,000-policy home and auto book, adds Primus Capital as investor</h3>
+          <p class="card-summary">Embedded insurance platform Matic acquired Policygenius's property and casualty insurance portfolio of nearly 30,000 policies and secured a minority growth investment from Primus Capital to fund further expansion.</p>
+          <div class="card-footer">
+            <span class="card-source">The Insurer</span>
+            <a class="card-link" href="https://www.theinsurer.com/ti/news/matic-acquires-policygenius-pc-portfolio-secures-primus-capital-backing-2026-06-24/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="People &amp; Leadership" data-geo="India"
+                 data-search="neoproed launches to close india's insurtech talent gap neoproed, founded by veteran insurance leaders, launched its insurtech professional program with the gift international fintech institute to train talent for india's fast-growing, ai- and embedded-insurance-driven sector. insurtech talent program">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurtech Talent Program</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-07-04</div>
+          <h3 class="card-headline">NeoProEd launches to close India's insurtech talent gap</h3>
+          <p class="card-summary">NeoProEd, founded by veteran insurance leaders, launched its Insurtech Professional Program with the GIFT International FinTech Institute to train talent for India's fast-growing, AI- and embedded-insurance-driven sector.</p>
+          <div class="card-footer">
+            <span class="card-source">Business Standard</span>
+            <a class="card-link" href="https://www.business-standard.com/amp/content/press-releases-ani/neoproed-launches-to-build-india-s-next-generation-of-insurance-insurtech-leaders-126070400018_1.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-health-insurance---payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="People &amp; Leadership" data-geo="United States"
+                 data-search="brian evanko takes the reins as cigna's new ceo brian evanko officially became ceo of the cigna group on july 1, succeeding david cordani, who moves into the role of executive chair after nearly 17 years leading the company. payer ceo transition">
+          <div class="card-tags">
+            <span class="tag tag-topic">Payer CEO Transition</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Brian Evanko takes the reins as Cigna's new CEO</h3>
+          <p class="card-summary">Brian Evanko officially became CEO of The Cigna Group on July 1, succeeding David Cordani, who moves into the role of executive chair after nearly 17 years leading the company.</p>
+          <div class="card-footer">
+            <span class="card-source">Bloomberg</span>
+            <a class="card-link" href="https://www.bloomberg.com/news/articles/2026-07-01/cigna-s-ceo-vows-to-put-patients-first-wall-street-is-watching" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="aca marketplace enrollment drops by millions as subsidy fight continues with enhanced aca premium subsidies expired, marketplace enrollment has fallen by millions, and the trump administration and policy analysts continue to disagree over how much of the drop reflects affordability versus fraud crackdowns. aca enrollment decline">
+          <div class="card-tags">
+            <span class="tag tag-topic">ACA Enrollment Decline</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">ACA marketplace enrollment drops by millions as subsidy fight continues</h3>
+          <p class="card-summary">With enhanced ACA premium subsidies expired, marketplace enrollment has fallen by millions, and the Trump administration and policy analysts continue to disagree over how much of the drop reflects affordability versus fraud crackdowns.</p>
+          <div class="card-footer">
+            <span class="card-source">CNBC</span>
+            <a class="card-link" href="https://www.cnbc.com/2026/07/03/aca-enrollment-enhanced-subsidies-lapse-fraud.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="elevance sues cms seeking same medicare advantage star-rating fix given to clover elevance health sued cms and hhs, arguing it deserves the same star-ratings recalculation a court forced for clover health, a change elevance says would be worth about $115 million in quality bonus payments. ma star ratings lawsuit">
+          <div class="card-tags">
+            <span class="tag tag-topic">MA Star Ratings Lawsuit</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-02</div>
+          <h3 class="card-headline">Elevance sues CMS seeking same Medicare Advantage star-rating fix given to Clover</h3>
+          <p class="card-summary">Elevance Health sued CMS and HHS, arguing it deserves the same star-ratings recalculation a court forced for Clover Health, a change Elevance says would be worth about $115 million in quality bonus payments.</p>
+          <div class="card-footer">
+            <span class="card-source">STAT News</span>
+            <a class="card-link" href="https://www.statnews.com/2026/07/02/elevance-lawsuit-medicare-advantage-star-ratings-clover/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>

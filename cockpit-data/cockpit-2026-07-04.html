@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #5</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">July 4, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #5</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">9</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">6</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">5</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">18</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option>
+        <option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option><option value="APAC">APAC</option><option value="Global">Global</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button>
+      <button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Investments">Investments</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button><button class="chip" data-filter-type="vertical" data-value="Healthcare / Provider &amp; Clinical">Healthcare / Provider &amp; Clinical</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button>
+      <button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Technology &amp; AI">Technology &amp; AI</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-investments" class="toc-link">Investments</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-brokertech" class="toc-link">BrokerTech</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance---payer" class="toc-link">Health Insurance / Payer</a><a href="#v-healthcare---provider-clinical" class="toc-link">Healthcare / Provider &amp; Clinical</a></nav>
+
+<main class="main" id="main">
+  
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="M&amp;A" data-geo="India"
+                 data-search="icici prudential life seeks reclassification of prudential as investor amid bharti life buyout as prudential moves to take a 75% controlling stake in bharti life insurance, icici prudential life's board asked regulators to reclassify prudential corporation holdings from a promoter to an investor and is weighing a rename to icici life, with both promoters signing a letter of undertaking on july 4 to manage the conflict of interest. prudential-bharti life deal">
+          <div class="card-tags">
+            <span class="tag tag-topic">Prudential-Bharti Life Deal</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-07-05</div>
+          <h3 class="card-headline">ICICI Prudential Life seeks reclassification of Prudential as investor amid Bharti Life buyout</h3>
+          <p class="card-summary">As Prudential moves to take a 75% controlling stake in Bharti Life Insurance, ICICI Prudential Life's board asked regulators to reclassify Prudential Corporation Holdings from a promoter to an investor and is weighing a rename to ICICI Life, with both promoters signing a letter of undertaking on July 4 to manage the conflict of interest.</p>
+          <div class="card-footer">
+            <span class="card-source">Business Standard</span>
+            <a class="card-link" href="https://www.business-standard.com/companies/news/icici-pru-life-seeks-investor-status-for-prudential-after-bharti-life-deal-126070500585_1.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-investments" data-vertical-section="Investments">
+      <div class="section-head">
+        <h2 class="section-title">Investments</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Investments" data-lens="M&amp;A" data-geo="Global"
+                 data-search="allianz and zurich launch joint blended-finance vehicle with government backers allianz and zurich, alongside axa and canadian pension giant la caisse, launched scaled development, a platform meant to mobilize private capital for sustainable projects in emerging markets, with germany and canada committing initial public capital of up to €130 million. blended finance platform">
+          <div class="card-tags">
+            <span class="tag tag-topic">Blended Finance Platform</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-06</div>
+          <h3 class="card-headline">Allianz and Zurich launch joint blended-finance vehicle with government backers</h3>
+          <p class="card-summary">Allianz and Zurich, alongside AXA and Canadian pension giant La Caisse, launched Scaled Development, a platform meant to mobilize private capital for sustainable projects in emerging markets, with Germany and Canada committing initial public capital of up to €130 million.</p>
+          <div class="card-footer">
+            <span class="card-source">The Insurer</span>
+            <a class="card-link" href="https://www.theinsurer.com/sustainable-insurance/news/allianz-and-zurich-form-blended-finance-investment-company-for-sustainable-2026-07-06/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="Market Economics" data-geo="UK/Europe"
+                 data-search="european wealth managers rethink how they welcome crypto-derived fortunes private banks including dutch wealth manager van lanschot kempen are shifting from treating crypto wealth holders with suspicion to actively courting them, pairing compliance specialists with family-office style services to capture the 'new wealthy.' crypto wealth onboarding">
+          <div class="card-tags">
+            <span class="tag tag-topic">Crypto Wealth Onboarding</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">European wealth managers rethink how they welcome crypto-derived fortunes</h3>
+          <p class="card-summary">Private banks including Dutch wealth manager Van Lanschot Kempen are shifting from treating crypto wealth holders with suspicion to actively courting them, pairing compliance specialists with family-office style services to capture the 'new wealthy.'</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/07/01/welcoming-the-new-wealthy/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Wealth Management" data-lens="Investments &amp; Funding" data-geo="Global"
+                 data-search="wealthtech leads another active week of fintech fundraising wealthtech startups accounted for five of the 17 fintech funding deals tracked in the first days of july, continuing a strong run for advisor- and ria-focused technology investment following a record q1 for the category. wealthtech funding wave">
+          <div class="card-tags">
+            <span class="tag tag-topic">WealthTech Funding Wave</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">WealthTech leads another active week of fintech fundraising</h3>
+          <p class="card-summary">Wealthtech startups accounted for five of the 17 fintech funding deals tracked in the first days of July, continuing a strong run for advisor- and RIA-focused technology investment following a record Q1 for the category.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/07/03/here-are-the-17-deals-recorded-by-fintechs-this-week-read-them-all-here/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="Global"
+                 data-search="swiss re projects sharpest slowdown in global non-life premium growth in over a decade swiss re institute forecasts real non-life premium growth will slow to just 0.6% in 2026, far below the 3.6% long-term trend, as competitive pricing and softer economic momentum weigh on advanced markets while insurer roe eases from its 2025 peak. non-life premium slowdown">
+          <div class="card-tags">
+            <span class="tag tag-topic">Non-Life Premium Slowdown</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">Swiss Re projects sharpest slowdown in global non-life premium growth in over a decade</h3>
+          <p class="card-summary">Swiss Re Institute forecasts real non-life premium growth will slow to just 0.6% in 2026, far below the 3.6% long-term trend, as competitive pricing and softer economic momentum weigh on advanced markets while insurer ROE eases from its 2025 peak.</p>
+          <div class="card-footer">
+            <span class="card-source">Reinsurance News</span>
+            <a class="card-link" href="https://www.reinsurancene.ws/swiss-re-institute-forecasts-non-life-premium-growth-to-slow-to-0-6-in-2026/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="Global"
+                 data-search="jpmorgan sees no floor yet for falling reinsurance prices after steep midyear drop jpmorgan analysts say property catastrophe reinsurance rates fell roughly 16% at the july 1 renewal, an acceleration from january, as record capital and low catastrophe losses continue shifting pricing power toward cedents with little sign of stabilizing. reinsurance rate softening">
+          <div class="card-tags">
+            <span class="tag tag-topic">Reinsurance Rate Softening</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">JPMorgan sees no floor yet for falling reinsurance prices after steep midyear drop</h3>
+          <p class="card-summary">JPMorgan analysts say property catastrophe reinsurance rates fell roughly 16% at the July 1 renewal, an acceleration from January, as record capital and low catastrophe losses continue shifting pricing power toward cedents with little sign of stabilizing.</p>
+          <div class="card-footer">
+            <span class="card-source">Reinsurance News</span>
+            <a class="card-link" href="https://www.reinsurancene.ws/unlikely-a-floor-will-be-found-on-reinsurance-pricing-in-the-near-term-jp-morgan/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="People &amp; Leadership" data-geo="UK/Europe"
+                 data-search="willis re adds veteran marine broker to reinsurance team willis re hired david kim, a 20-year marine and non-marine reinsurance veteran and former korean re london chief executive, as a reinsurance broker to bolster its marine practice. reinsurance broker hire">
+          <div class="card-tags">
+            <span class="tag tag-topic">Reinsurance Broker Hire</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">Willis Re adds veteran marine broker to reinsurance team</h3>
+          <p class="card-summary">Willis Re hired David Kim, a 20-year marine and non-marine reinsurance veteran and former Korean Re London chief executive, as a reinsurance broker to bolster its marine practice.</p>
+          <div class="card-footer">
+            <span class="card-source">Reinsurance News</span>
+            <a class="card-link" href="https://www.reinsurancene.ws/willis-re-hires-david-kim-as-reinsurance-broker/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="People &amp; Leadership" data-geo="UK/Europe"
+                 data-search="mgaa installs bspoke group's tim smyth as new chairman the uk's managing general agents' association named tim smyth, chair of bspoke group, as its new chairman, succeeding charles manchester after his decade-long tenure leading the trade body. mgaa leadership change">
+          <div class="card-tags">
+            <span class="tag tag-topic">MGAA Leadership Change</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">MGAA installs Bspoke Group's Tim Smyth as new chairman</h3>
+          <p class="card-summary">The UK's Managing General Agents' Association named Tim Smyth, chair of Bspoke Group, as its new chairman, succeeding Charles Manchester after his decade-long tenure leading the trade body.</p>
+          <div class="card-footer">
+            <span class="card-source">PropertyCasualty360</span>
+            <a class="card-link" href="https://www.propertycasualty360.com/2026/07/06/people-on-the-move-in-the-pc-insurance-industry-july-3-2026/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="People &amp; Leadership" data-geo="United States"
+                 data-search="alliant lures former hub executive to lead expanded m&amp;a advisory push alliant insurance services named justin sorensen, formerly a hub international practice leader, to the newly created role of executive vice president within alliant's mergers and acquisitions advisory team, reporting to the president of alliant p&amp;c. broker m&amp;a advisory hire">
+          <div class="card-tags">
+            <span class="tag tag-topic">Broker M&amp;A Advisory Hire</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-02</div>
+          <h3 class="card-headline">Alliant lures former Hub executive to lead expanded M&amp;A advisory push</h3>
+          <p class="card-summary">Alliant Insurance Services named Justin Sorensen, formerly a Hub International practice leader, to the newly created role of executive vice president within Alliant's mergers and acquisitions advisory team, reporting to the president of Alliant P&amp;C.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/midwest/2026/07/02/876155.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokertech" data-vertical-section="BrokerTech">
+      <div class="section-head">
+        <h2 class="section-title">BrokerTech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="BrokerTech" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="white glove insurance spins up brokerage tech subsidiary white glove insurance launched white glove technology, a new subsidiary building a full-service platform meant to consolidate the fragmented vendor stack independent brokerages rely on, with a phased rollout planned through q4 2026. brokerage tech platform">
+          <div class="card-tags">
+            <span class="tag tag-topic">Brokerage Tech Platform</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">White Glove Insurance spins up brokerage tech subsidiary</h3>
+          <p class="card-summary">White Glove Insurance launched White Glove Technology, a new subsidiary building a full-service platform meant to consolidate the fragmented vendor stack independent brokerages rely on, with a phased rollout planned through Q4 2026.</p>
+          <div class="card-footer">
+            <span class="card-source">24-7PressRelease</span>
+            <a class="card-link" href="https://www.24-7pressrelease.com/press-release/536466/white-glove-insurance-to-launch-subsidiary-white-glove-technology-that-focuses-on-a-full-service-technology-platform-for-insurance-brokerage-firms" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">4 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="Investments &amp; Funding" data-geo="Global"
+                 data-search="goldman-led $110 million round backs ai claims automation platform taktile goldman sachs led a $110 million investment into taktile, with one major insurer reportedly modeling more than $90 million in claims savings from adopting the ai decisioning platform, in one of the quarter's largest insurtech rounds. ai claims funding round">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Claims Funding Round</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-06-27</div>
+          <h3 class="card-headline">Goldman-led $110 million round backs AI claims automation platform Taktile</h3>
+          <p class="card-summary">Goldman Sachs led a $110 million investment into Taktile, with one major insurer reportedly modeling more than $90 million in claims savings from adopting the AI decisioning platform, in one of the quarter's largest insurtech rounds.</p>
+          <div class="card-footer">
+            <span class="card-source">InsurTech.ME</span>
+            <a class="card-link" href="https://www.insurtech.me/blog/2026/6/27/insurance-insurtech-investment-intelligence-report-week-of-june-2127-2026" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="insurers' ai pilots keep stalling before they reach production a growing share of insurer ai pilots fail to graduate into production deployments, with industry analysts pointing to weak data foundations and unclear roi cases as the main reasons projects stall despite heavy ai investment across the sector. ai pilot failure">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Pilot Failure</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Insurers' AI pilots keep stalling before they reach production</h3>
+          <p class="card-summary">A growing share of insurer AI pilots fail to graduate into production deployments, with industry analysts pointing to weak data foundations and unclear ROI cases as the main reasons projects stall despite heavy AI investment across the sector.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/07/01/why-ai-pilots-are-failing-insurers-and-what-comes-next/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="People &amp; Leadership" data-geo="India"
+                 data-search="new indian institute launches insurtech leadership training program at gift city neoproed kicked off the first cohort of its insurtech professional program in partnership with gift international fintech institute, a 10-week practitioner-led course capped by a residential capstone in gandhinagar aimed at building india's next generation of insurance and insurtech leaders. insurtech talent program">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurtech Talent Program</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-07-03</div>
+          <h3 class="card-headline">New Indian institute launches insurtech leadership training program at GIFT City</h3>
+          <p class="card-summary">NeoProEd kicked off the first cohort of its Insurtech Professional Program in partnership with GIFT International FinTech Institute, a 10-week practitioner-led course capped by a residential capstone in Gandhinagar aimed at building India's next generation of insurance and insurtech leaders.</p>
+          <div class="card-footer">
+            <span class="card-source">ANI News</span>
+            <a class="card-link" href="https://www.aninews.in/news/business/neoproed-launches-to-build-indias-next-generation-of-insurance-amp-insurtech-leaders20260703171028/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="Technology &amp; AI" data-geo="APAC"
+                 data-search="asia's largest insurtech gathering spotlights agentic ai and underinsurance itc asia 2026 drew more than 1,500 industry leaders to singapore for sessions on turning agentic ai into measurable underwriting and claims roi, alongside dedicated tracks on japan's evolving insurance ecosystem and expanding coverage across india. apac insurtech conference">
+          <div class="card-tags">
+            <span class="tag tag-topic">APAC Insurtech Conference</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-07-02</div>
+          <h3 class="card-headline">Asia's largest insurtech gathering spotlights agentic AI and underinsurance</h3>
+          <p class="card-summary">ITC Asia 2026 drew more than 1,500 industry leaders to Singapore for sessions on turning agentic AI into measurable underwriting and claims ROI, alongside dedicated tracks on Japan's evolving insurance ecosystem and expanding coverage across India.</p>
+          <div class="card-footer">
+            <span class="card-source">InsureTech Connect Asia</span>
+            <a class="card-link" href="https://asia.insuretechconnect.com/insights" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-health-insurance---payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="medicare beneficiaries get $50-a-month glp-1 weight-loss drug access under new cms bridge program cms's new medicare glp-1 bridge program, which took effect july 1, lets eligible part d beneficiaries access wegovy and zepbound for weight management at a flat $50 monthly copay through the end of 2027, marking the first time medicare has covered glp-1s for weight loss. medicare glp-1 coverage">
+          <div class="card-tags">
+            <span class="tag tag-topic">Medicare GLP-1 Coverage</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-30</div>
+          <h3 class="card-headline">Medicare beneficiaries get $50-a-month GLP-1 weight-loss drug access under new CMS bridge program</h3>
+          <p class="card-summary">CMS's new Medicare GLP-1 Bridge program, which took effect July 1, lets eligible Part D beneficiaries access Wegovy and Zepbound for weight management at a flat $50 monthly copay through the end of 2027, marking the first time Medicare has covered GLP-1s for weight loss.</p>
+          <div class="card-footer">
+            <span class="card-source">CNBC</span>
+            <a class="card-link" href="https://www.cnbc.com/2026/06/30/medicare-obesity-drug-glp-1-coverage-starting-july-1.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States"
+                 data-search="florida's top cancer center drops out of humana medicare advantage network moffitt cancer center became out-of-network for humana medicare advantage ppo and hmo plans starting july 1, forcing tampa-area cancer patients to weigh higher out-of-pocket costs or switch coverage, though humana may extend continuity-of-care exceptions through year-end. ma network dispute">
+          <div class="card-tags">
+            <span class="tag tag-topic">MA Network Dispute</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-01</div>
+          <h3 class="card-headline">Florida's top cancer center drops out of Humana Medicare Advantage network</h3>
+          <p class="card-summary">Moffitt Cancer Center became out-of-network for Humana Medicare Advantage PPO and HMO plans starting July 1, forcing Tampa-area cancer patients to weigh higher out-of-pocket costs or switch coverage, though Humana may extend continuity-of-care exceptions through year-end.</p>
+          <div class="card-footer">
+            <span class="card-source">FOX 13 Tampa Bay</span>
+            <a class="card-link" href="https://www.fox13news.com/news/some-humana-medicare-advantage-plans-will-be-out-network-moffitt-cancer-center-starting-july" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-healthcare---provider-clinical" data-vertical-section="Healthcare / Provider &amp; Clinical">
+      <div class="section-head">
+        <h2 class="section-title">Healthcare / Provider &amp; Clinical</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="judge forces mississippi medicaid to pay delta hospital to avert closure a mississippi chancery court judge ordered the state's medicaid division to release a $2.4 million payment to greenwood leflore hospital, averting an imminent shutdown while a planned takeover by the university of mississippi medical center proceeds. rural hospital medicaid fight">
+          <div class="card-tags">
+            <span class="tag tag-topic">Rural Hospital Medicaid Fight</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-06-29</div>
+          <h3 class="card-headline">Judge forces Mississippi Medicaid to pay Delta hospital to avert closure</h3>
+          <p class="card-summary">A Mississippi Chancery Court judge ordered the state's Medicaid division to release a $2.4 million payment to Greenwood Leflore Hospital, averting an imminent shutdown while a planned takeover by the University of Mississippi Medical Center proceeds.</p>
+          <div class="card-footer">
+            <span class="card-source">Becker's Hospital Review</span>
+            <a class="card-link" href="https://www.beckershospitalreview.com/finance/mississippi-judge-orders-state-medicaid-officials-to-pay-hospital-2-4-million-keep-it-open-through-july/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="openai leans on sam altman to court hospitals for its healthcare push openai is pitching hospitals directly, with ceo sam altman personally engaging health systems, as the company rolls out chatgpt for clinicians and a consumer 'chatgpt health' feature while competing with anthropic and google for enterprise healthcare business. ai healthcare race">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Healthcare Race</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-07</div>
+          <h3 class="card-headline">OpenAI leans on Sam Altman to court hospitals for its healthcare push</h3>
+          <p class="card-summary">OpenAI is pitching hospitals directly, with CEO Sam Altman personally engaging health systems, as the company rolls out ChatGPT for Clinicians and a consumer 'ChatGPT Health' feature while competing with Anthropic and Google for enterprise healthcare business.</p>
+          <div class="card-footer">
+            <span class="card-source">Forbes</span>
+            <a class="card-link" href="https://www.forbes.com/sites/amyfeldman/2026/07/07/how-openai-plans-to-win-over-doctors-patients-and-hospitals/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>
