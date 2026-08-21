@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #10</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">August 21, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #10</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">12</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">6</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">5</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">32</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option>
+        <option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option><option value="APAC">APAC</option><option value="Global">Global</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button>
+      <button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Retirement">Retirement</button><button class="chip" data-filter-type="vertical" data-value="Investments">Investments</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="TPA">TPA</button><button class="chip" data-filter-type="vertical" data-value="FinTech">FinTech</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button><button class="chip" data-filter-type="vertical" data-value="Healthcare / Provider &amp; Clinical">Healthcare / Provider &amp; Clinical</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button>
+      <button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Technology &amp; AI">Technology &amp; AI</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-retirement" class="toc-link">Retirement</a><a href="#v-investments" class="toc-link">Investments</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-tpa" class="toc-link">TPA</a><a href="#v-fintech" class="toc-link">FinTech</a><a href="#v-brokertech" class="toc-link">BrokerTech</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance-payer" class="toc-link">Health Insurance / Payer</a><a href="#v-healthcare-provider-clinical" class="toc-link">Healthcare / Provider &amp; Clinical</a></nav>
+
+<main class="main" id="main">
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Market Economics" data-geo="United States"
+                 data-search="limra forecasts continued strong life and annuity sales through the rest of 2026 limra researchers point to sustained demand for indexed universal life and accumulation products, with annuities continuing to offer clients certainty amid market volatility heading into the back half of the year. annuity sales outlook">
+          <div class="card-tags">
+            <span class="tag tag-topic">Annuity Sales Outlook</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-17</div>
+          <h3 class="card-headline">LIMRA forecasts continued strong life and annuity sales through the rest of 2026</h3>
+          <p class="card-summary">LIMRA researchers point to sustained demand for indexed universal life and accumulation products, with annuities continuing to offer clients certainty amid market volatility heading into the back half of the year.</p>
+          <div class="card-footer">
+            <span class="card-source">InsuranceNewsNet</span>
+            <a class="card-link" href="https://insurancenewsnet.com/innarticle/limra-predicts-strong-life-and-annuity-sales-for-the-rest-of-2026" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="ai cuts underwriting cycle times but widens gap between insurers and disrupted agents panelists report ai-driven underwriting platforms now pull data from electronic health records, prescription histories and wearables to render near-instant decisions, cutting underwriting and claims processing times by up to 40% — even as the same tools reshape, and in some cases threaten, the traditional agent&#x27;s role. ai in underwriting">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI in Underwriting</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-13</div>
+          <h3 class="card-headline">AI cuts underwriting cycle times but widens gap between insurers and disrupted agents</h3>
+          <p class="card-summary">Panelists report AI-driven underwriting platforms now pull data from electronic health records, prescription histories and wearables to render near-instant decisions, cutting underwriting and claims processing times by up to 40% — even as the same tools reshape, and in some cases threaten, the traditional agent&#x27;s role.</p>
+          <div class="card-footer">
+            <span class="card-source">InsuranceNewsNet</span>
+            <a class="card-link" href="https://insurancenewsnet.com/innarticle/ais-dual-reality-efficiency-for-insurers-disruption-for-agents" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Regulatory &amp; Policy" data-geo="India"
+                 data-search="india proposes first overhaul of insurance rules in nearly 90 years the finance ministry released draft insurance rules, 2026 to replace regulations dating to 1939, adding stricter agent requirements, clearer shareholding rules and greater product-disclosure transparency; a 30-day public comment period is open. insurance rules overhaul">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurance Rules Overhaul</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-07-23</div>
+          <h3 class="card-headline">India proposes first overhaul of insurance rules in nearly 90 years</h3>
+          <p class="card-summary">The Finance Ministry released draft Insurance Rules, 2026 to replace regulations dating to 1939, adding stricter agent requirements, clearer shareholding rules and greater product-disclosure transparency; a 30-day public comment period is open.</p>
+          <div class="card-footer">
+            <span class="card-source">CAclubindia</span>
+            <a class="card-link" href="https://www.caclubindia.com/news/draft-insurance-rules-2026-released-26681.asp" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-retirement" data-vertical-section="Retirement">
+      <div class="section-head">
+        <h2 class="section-title">Retirement</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Retirement" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="retirement income tools set to move from pilot to mainstream adoption in 2026, iric forecasts the institutional retirement income council projects plan sponsors will shift from exploring in-plan retirement income solutions to actually rolling them out this year, alongside expanded financial wellness offerings. retirement income adoption">
+          <div class="card-tags">
+            <span class="tag tag-topic">Retirement Income Adoption</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-10</div>
+          <h3 class="card-headline">Retirement income tools set to move from pilot to mainstream adoption in 2026, IRIC forecasts</h3>
+          <p class="card-summary">The Institutional Retirement Income Council projects plan sponsors will shift from exploring in-plan retirement income solutions to actually rolling them out this year, alongside expanded financial wellness offerings.</p>
+          <div class="card-footer">
+            <span class="card-source">401(k) Specialist</span>
+            <a class="card-link" href="https://401kspecialistmag.com/iric-forecasts-retirement-income-adoption-financial-wellness-expansion-for-2026/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Retirement" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="outdated recordkeeping technology could be costing the u.s. retirement industry billions, study finds a new study finds legacy recordkeeping infrastructure is straining under demand for better participant tools, with consulting estimates suggesting ai-driven modernization could save the retirement and pension industry $16 billion to $20 billion in operating costs. recordkeeping modernization">
+          <div class="card-tags">
+            <span class="tag tag-topic">Recordkeeping Modernization</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-12</div>
+          <h3 class="card-headline">Outdated recordkeeping technology could be costing the U.S. retirement industry billions, study finds</h3>
+          <p class="card-summary">A new study finds legacy recordkeeping infrastructure is straining under demand for better participant tools, with consulting estimates suggesting AI-driven modernization could save the retirement and pension industry $16 billion to $20 billion in operating costs.</p>
+          <div class="card-footer">
+            <span class="card-source">401kTV</span>
+            <a class="card-link" href="https://401ktv.com/recordkeeping-tech-needs-an-overhaul-study/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-investments" data-vertical-section="Investments">
+      <div class="section-head">
+        <h2 class="section-title">Investments</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Investments" data-lens="Market Economics" data-geo="Global"
+                 data-search="pimco keeps drawing inflows as parent allianz increases its stake pimco pulled in €31.7 billion ($36.5 billion) of third-party net inflows in the second quarter with a further double-digit-billion amount in july, prompting insurer-parent allianz to boost its ownership stake in the asset manager, per allianz&#x27;s cfo. asset manager inflows">
+          <div class="card-tags">
+            <span class="tag tag-topic">Asset Manager Inflows</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-07</div>
+          <h3 class="card-headline">Pimco keeps drawing inflows as parent Allianz increases its stake</h3>
+          <p class="card-summary">Pimco pulled in €31.7 billion ($36.5 billion) of third-party net inflows in the second quarter with a further double-digit-billion amount in July, prompting insurer-parent Allianz to boost its ownership stake in the asset manager, per Allianz&#x27;s CFO.</p>
+          <div class="card-footer">
+            <span class="card-source">Bloomberg</span>
+            <a class="card-link" href="https://www.bloomberg.com/news/articles/2026-08-07/pimco-keeps-pulling-in-money-as-insurer-allianz-boosts-stake" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Investments" data-lens="Market Economics" data-geo="United States"
+                 data-search="prudential financial&#x27;s q2 profit nearly doubles as assets under management reach $1.64 trillion prudential reported second-quarter net income of $985 million, up from $533 million a year earlier, with adjusted operating income up about 12% year-over-year and total aum climbing to $1.642 trillion. insurer earnings">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurer Earnings</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-05</div>
+          <h3 class="card-headline">Prudential Financial&#x27;s Q2 profit nearly doubles as assets under management reach $1.64 trillion</h3>
+          <p class="card-summary">Prudential reported second-quarter net income of $985 million, up from $533 million a year earlier, with adjusted operating income up about 12% year-over-year and total AUM climbing to $1.642 trillion.</p>
+          <div class="card-footer">
+            <span class="card-source">Community News</span>
+            <a class="card-link" href="https://communitynews.org/sections/business-cns/prudential-financial-second-quarter-2026-results-newark/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Investments" data-lens="Market Economics" data-geo="Global"
+                 data-search="insurers keep raising private credit exposure despite market jitters, survey finds more than half of insurers surveyed plan to increase private credit exposure over the next two years, according to goldman sachs asset management&#x27;s 2026 global insurance survey, even as investor anxiety over loan defaults and credit quality has grown. private credit allocation">
+          <div class="card-tags">
+            <span class="tag tag-topic">Private Credit Allocation</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-11</div>
+          <h3 class="card-headline">Insurers keep raising private credit exposure despite market jitters, survey finds</h3>
+          <p class="card-summary">More than half of insurers surveyed plan to increase private credit exposure over the next two years, according to Goldman Sachs Asset Management&#x27;s 2026 Global Insurance Survey, even as investor anxiety over loan defaults and credit quality has grown.</p>
+          <div class="card-footer">
+            <span class="card-source">Chief Investment Officer</span>
+            <a class="card-link" href="https://www.ai-cio.com/news/despite-private-credit-worries-insurers-demand-for-alts-remains-strong/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="new ai infrastructure platform astraeus launches to give advisory firms firm-specific ai context astraeus debuted an ai-native infrastructure platform aimed at rias, wealthtech platforms and private equity firms seeking to modernize into ai-native operating environments for regulated advisory businesses. ai advisory infrastructure">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Advisory Infrastructure</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-07</div>
+          <h3 class="card-headline">New AI infrastructure platform Astraeus launches to give advisory firms firm-specific AI context</h3>
+          <p class="card-summary">Astraeus debuted an AI-native infrastructure platform aimed at RIAs, wealthtech platforms and private equity firms seeking to modernize into AI-native operating environments for regulated advisory businesses.</p>
+          <div class="card-footer">
+            <span class="card-source">WealthManagement.com</span>
+            <a class="card-link" href="https://www.wealthmanagement.com/advisor-support-platforms/astraeus-launches-ai-platform-for-advisory-firms" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Wealth Management" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="advisorfinder launches tool to show advisors how ai search engines portray them online advisorfinder intelligence gives financial advisors a digital presence report grading their search visibility, website health and online credibility, alongside a prioritized plan to improve how ai tools recommend them. advisor ai visibility">
+          <div class="card-tags">
+            <span class="tag tag-topic">Advisor AI Visibility</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-19</div>
+          <h3 class="card-headline">AdvisorFinder launches tool to show advisors how AI search engines portray them online</h3>
+          <p class="card-summary">AdvisorFinder Intelligence gives financial advisors a Digital Presence Report grading their search visibility, website health and online credibility, alongside a prioritized plan to improve how AI tools recommend them.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/08/19/advisorfinder-launches-ai-visibility-tool-for-advisors/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Wealth Management" data-lens="Market Economics" data-geo="UK/Europe"
+                 data-search="global wealth-insurance sales jump 46% over two years as high-net-worth planning needs evolve international wealth insurance sales rose from £36.4 billion to £53 billion between 2023 and 2025, a roughly 21% compound annual growth rate, as affluent clients increasingly use insurance wrappers for cross-border wealth planning. wealth insurance growth">
+          <div class="card-tags">
+            <span class="tag tag-topic">Wealth Insurance Growth</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-08-10</div>
+          <h3 class="card-headline">Global wealth-insurance sales jump 46% over two years as high-net-worth planning needs evolve</h3>
+          <p class="card-summary">International wealth insurance sales rose from £36.4 billion to £53 billion between 2023 and 2025, a roughly 21% compound annual growth rate, as affluent clients increasingly use insurance wrappers for cross-border wealth planning.</p>
+          <div class="card-footer">
+            <span class="card-source">Law360</span>
+            <a class="card-link" href="https://www.law360.com/financial-services-uk/articles/2509817" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">4 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="United States"
+                 data-search="commercial p&amp;c market conditions turn more favorable for buyers in midyear 2026 update alera group&#x27;s midyear market update finds commercial insurance conditions easing for many businesses, even as rbc capital markets warns that softer primary property pricing and elevated catastrophe losses could pressure insurer earnings. commercial market conditions">
+          <div class="card-tags">
+            <span class="tag tag-topic">Commercial Market Conditions</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-01</div>
+          <h3 class="card-headline">Commercial P&amp;C market conditions turn more favorable for buyers in midyear 2026 update</h3>
+          <p class="card-summary">Alera Group&#x27;s midyear market update finds commercial insurance conditions easing for many businesses, even as RBC Capital Markets warns that softer primary property pricing and elevated catastrophe losses could pressure insurer earnings.</p>
+          <div class="card-footer">
+            <span class="card-source">Alera Group</span>
+            <a class="card-link" href="https://aleragroup.com/insights/are-you-prepared-2026-property-and-casualty-trends-uncovered/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="M&amp;A" data-geo="United States"
+                 data-search="mapfre to acquire massachusetts insurer safety insurance for $1.54 billion mapfre agreed to buy safety insurance in an all-cash deal at $105 per share, a 44% premium, creating the second-largest private passenger auto insurer and the largest homeowners and commercial auto insurer in new england once combined. regional carrier m&amp;a">
+          <div class="card-tags">
+            <span class="tag tag-topic">Regional Carrier M&amp;A</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-24</div>
+          <h3 class="card-headline">Mapfre to acquire Massachusetts insurer Safety Insurance for $1.54 billion</h3>
+          <p class="card-summary">Mapfre agreed to buy Safety Insurance in an all-cash deal at $105 per share, a 44% premium, creating the second-largest private passenger auto insurer and the largest homeowners and commercial auto insurer in New England once combined.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/east/2026/07/24/878870.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="APAC"
+                 data-search="apac insurers navigate geopolitics, catastrophe losses and ai disruption heading into 2026 industry outlooks point to double-digit new-business growth for asia-pacific life insurers in china, hong kong and singapore, while p&amp;c insurers in the region face rising per-claim costs tied to trade tensions and climate-driven disasters. apac insurer outlook">
+          <div class="card-tags">
+            <span class="tag tag-topic">APAC Insurer Outlook</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-08-14</div>
+          <h3 class="card-headline">APAC insurers navigate geopolitics, catastrophe losses and AI disruption heading into 2026</h3>
+          <p class="card-summary">Industry outlooks point to double-digit new-business growth for Asia-Pacific life insurers in China, Hong Kong and Singapore, while P&amp;C insurers in the region face rising per-claim costs tied to trade tensions and climate-driven disasters.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Business</span>
+            <a class="card-link" href="https://www.insurancebusinessmag.com/au/news/breaking-news/apac-insurers-confront-geopolitics-catastrophes-and-ai-in-2026-563640.aspx" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="People &amp; Leadership" data-geo="Global"
+                 data-search="chubb tempest re names new executive chairman and president in reinsurance leadership shakeup chubb elevated james wixtead to executive chairman of its tempest re reinsurance business and named michael o&#x27;donnell president, effective august 1, as part of a broader realignment of chubb&#x27;s global reinsurance leadership. reinsurance leadership">
+          <div class="card-tags">
+            <span class="tag tag-topic">Reinsurance Leadership</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-20</div>
+          <h3 class="card-headline">Chubb Tempest Re names new Executive Chairman and President in reinsurance leadership shakeup</h3>
+          <p class="card-summary">Chubb elevated James Wixtead to Executive Chairman of its Tempest Re reinsurance business and named Michael O&#x27;Donnell President, effective August 1, as part of a broader realignment of Chubb&#x27;s global reinsurance leadership.</p>
+          <div class="card-footer">
+            <span class="card-source">Chubb</span>
+            <a class="card-link" href="https://news.chubb.com/2026-07-20-Chubb-Tempest-Re-Announces-Key-Leadership-Changes" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">4 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="M&amp;A" data-geo="United States"
+                 data-search="marsh mclennan agency to acquire iowa&#x27;s accel holdings, expanding midwest footprint mma agreed to acquire the 90-year-old, employee-owned accel group, adding agribusiness, wealth management and retirement advisory capabilities across seven offices in iowa, illinois, missouri and kansas. midwest broker expansion">
+          <div class="card-tags">
+            <span class="tag tag-topic">Midwest Broker Expansion</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-11</div>
+          <h3 class="card-headline">Marsh McLennan Agency to acquire Iowa&#x27;s Accel Holdings, expanding Midwest footprint</h3>
+          <p class="card-summary">MMA agreed to acquire the 90-year-old, employee-owned Accel Group, adding agribusiness, wealth management and retirement advisory capabilities across seven offices in Iowa, Illinois, Missouri and Kansas.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/midwest/2026/08/11/881082.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="M&amp;A" data-geo="Global"
+                 data-search="munich re to acquire cyber insurtech at-bay for $575 million munich re&#x27;s hartford steam boiler unit will absorb at-bay, a top-10 us cyber insurer, in a deal valuing the company at roughly 2x gross written premium — a material step down from its 2021 venture valuation. cyber insurtech acquisition">
+          <div class="card-tags">
+            <span class="tag tag-topic">Cyber Insurtech Acquisition</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-19</div>
+          <h3 class="card-headline">Munich Re to acquire cyber insurtech At-Bay for $575 million</h3>
+          <p class="card-summary">Munich Re&#x27;s Hartford Steam Boiler unit will absorb At-Bay, a top-10 US cyber insurer, in a deal valuing the company at roughly 2x gross written premium — a material step down from its 2021 venture valuation.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/national/2026/08/19/882152.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="M&amp;A" data-geo="United States"
+                 data-search="willis re to acquire bms group&#x27;s u.s. reinsurance division willis re agreed to buy bms re us, including its reinsurance broking and capital advisory teams, giving the wtw/bain capital-backed reinsurance broker an operational presence in the world&#x27;s largest insurance market. reinsurance broking expansion">
+          <div class="card-tags">
+            <span class="tag tag-topic">Reinsurance Broking Expansion</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-18</div>
+          <h3 class="card-headline">Willis Re to acquire BMS Group&#x27;s U.S. reinsurance division</h3>
+          <p class="card-summary">Willis Re agreed to buy BMS Re US, including its reinsurance broking and capital advisory teams, giving the WTW/Bain Capital-backed reinsurance broker an operational presence in the world&#x27;s largest insurance market.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/national/2026/08/19/882135.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="Market Economics" data-geo="UK/Europe"
+                 data-search="broker confidence in specialist mgas for commercial motor risk climbs sharply a survey found nearly four in 10 brokers now have much higher confidence placing specialist commercial motor risks with mgas than a year ago, as the sector plugs capacity gaps left behind by traditional carriers. mga capacity confidence">
+          <div class="card-tags">
+            <span class="tag tag-topic">MGA Capacity Confidence</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-08-17</div>
+          <h3 class="card-headline">Broker confidence in specialist MGAs for commercial motor risk climbs sharply</h3>
+          <p class="card-summary">A survey found nearly four in 10 brokers now have much higher confidence placing specialist commercial motor risks with MGAs than a year ago, as the sector plugs capacity gaps left behind by traditional carriers.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Edge</span>
+            <a class="card-link" href="https://insurance-edge.net/2026/08/17/specialist-mgas-are-plugging-gaps-on-capacity-says-dcl/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-tpa" data-vertical-section="TPA">
+      <div class="section-head">
+        <h2 class="section-title">TPA</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="TPA" data-lens="M&amp;A" data-geo="United States"
+                 data-search="fiduciary services group completes its third tpa acquisition of 2026 fsg, parent of dwc – the 401(k) experts, acquired new jersey-based retirement plan tpa retirewell administrators, continuing a wave of consolidation among third-party administrators serving retirement plans. tpa consolidation">
+          <div class="card-tags">
+            <span class="tag tag-topic">TPA Consolidation</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07-15</div>
+          <h3 class="card-headline">Fiduciary Services Group completes its third TPA acquisition of 2026</h3>
+          <p class="card-summary">FSG, parent of DWC – The 401(k) Experts, acquired New Jersey-based retirement plan TPA RetireWell Administrators, continuing a wave of consolidation among third-party administrators serving retirement plans.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/fiduciary-services-group-acquires-new-jersey-tpa-retirewell-administrators-302826286.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="TPA" data-lens="Regulatory &amp; Policy" data-geo="India"
+                 data-search="irdai approves new policyholder-protection and penalty regulations at its 137th authority meeting india&#x27;s insurance regulator approved a raft of reforms — including new policyholder education and protection fund rules, a revised penalty framework, and amendments affecting third-party administrators — to align with the sabka bima sabki raksha act and simplify compliance. tpa regulatory reform">
+          <div class="card-tags">
+            <span class="tag tag-topic">TPA Regulatory Reform</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-07-28</div>
+          <h3 class="card-headline">IRDAI approves new policyholder-protection and penalty regulations at its 137th Authority meeting</h3>
+          <p class="card-summary">India&#x27;s insurance regulator approved a raft of reforms — including new policyholder education and protection fund rules, a revised penalty framework, and amendments affecting third-party administrators — to align with the Sabka Bima Sabki Raksha Act and simplify compliance.</p>
+          <div class="card-footer">
+            <span class="card-source">TaxGuru</span>
+            <a class="card-link" href="https://taxguru.in/corporate-law/irdai-approves-multiple-insurance-regulations-amendments-137th-authority-meeting.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-fintech" data-vertical-section="FinTech">
+      <div class="section-head">
+        <h2 class="section-title">FinTech</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="FinTech" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="insurity and its partner to close insurers&#x27; gap between choosing tech and actually deploying it cloud carrier-platform provider insurity teamed with consultancy insurance technology services to combine its software with implementation and consulting services, aimed at insurers stalling during technology rollouts. tech execution partnership">
+          <div class="card-tags">
+            <span class="tag tag-topic">Tech Execution Partnership</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-12</div>
+          <h3 class="card-headline">Insurity and ITS partner to close insurers&#x27; gap between choosing tech and actually deploying it</h3>
+          <p class="card-summary">Cloud carrier-platform provider Insurity teamed with consultancy Insurance Technology Services to combine its software with implementation and consulting services, aimed at insurers stalling during technology rollouts.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/08/12/insurity-and-its-target-the-insurance-industrys-tech-execution-gap/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="FinTech" data-lens="Investments &amp; Funding" data-geo="Global"
+                 data-search="ai-decisioning startup taktile raises $110 million series c led by goldman sachs taktile, which helps banks and insurers automate underwriting, claims and other high-stakes decisions with ai, closed a $110 million round led by goldman sachs alternatives, with balderton capital, index ventures, tiger global and y combinator also participating. ai decisioning funding">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Decisioning Funding</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-06-24</div>
+          <h3 class="card-headline">AI-decisioning startup Taktile raises $110 million Series C led by Goldman Sachs</h3>
+          <p class="card-summary">Taktile, which helps banks and insurers automate underwriting, claims and other high-stakes decisions with AI, closed a $110 million round led by Goldman Sachs Alternatives, with Balderton Capital, Index Ventures, Tiger Global and Y Combinator also participating.</p>
+          <div class="card-footer">
+            <span class="card-source">Goldman Sachs Asset Management</span>
+            <a class="card-link" href="https://am.gs.com/en-us/advisors/news/press-release/2026/taktile-110m-growth-equity-series-c-goldman-sachs-ai" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokertech" data-vertical-section="BrokerTech">
+      <div class="section-head">
+        <h2 class="section-title">BrokerTech</h2>
+        <span class="section-count">1 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="BrokerTech" data-lens="People &amp; Leadership" data-geo="United States"
+                 data-search="brokertech ventures sets chicago convening for late august, bringing brokers and insurtech founders together brokertech connect: chicago runs august 31 to september 2 at the fairmont chicago, with sessions on ai, change management and next-generation digital-first insurance organizations, backed by sponsors including eventual and coverflow. industry convening">
+          <div class="card-tags">
+            <span class="tag tag-topic">Industry Convening</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-13</div>
+          <h3 class="card-headline">BrokerTech Ventures sets Chicago convening for late August, bringing brokers and insurtech founders together</h3>
+          <p class="card-summary">BrokerTech Connect: Chicago runs August 31 to September 2 at the Fairmont Chicago, with sessions on AI, change management and next-generation digital-first insurance organizations, backed by sponsors including eventual and Coverflow.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/brokertech-connect-chicago-set-for-august-31september-2-announces-growing-sponsor-lineup-and-industry-programming-302848488.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="Investments &amp; Funding" data-geo="Global"
+                 data-search="global insurtech funding hits $2.44 billion in q2, the strongest quarter since 2022 gallagher re&#x27;s latest insurtech report found q2 funding concentrated overwhelmingly in ai: 99.1% of dollars went to ai-focused companies, even as early-stage deal funding fell sharply quarter over quarter. insurtech funding trends">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurtech Funding Trends</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-06</div>
+          <h3 class="card-headline">Global insurtech funding hits $2.44 billion in Q2, the strongest quarter since 2022</h3>
+          <p class="card-summary">Gallagher Re&#x27;s latest InsurTech report found Q2 funding concentrated overwhelmingly in AI: 99.1% of dollars went to AI-focused companies, even as early-stage deal funding fell sharply quarter over quarter.</p>
+          <div class="card-footer">
+            <span class="card-source">The Insurer</span>
+            <a class="card-link" href="https://www.theinsurer.com/ti/news/insurtech-funding-reaches-244-billion-in-q2-2026-gallagher-re-2026-08-06/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="ai underwriting startup sixfold partners with sollers consulting to speed carrier transformations sixfold will pair its ai-driven risk-assessment technology with sollers&#x27; consulting and implementation expertise to help insurance carriers move faster on underwriting modernization projects. ai underwriting partnership">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Underwriting Partnership</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-14</div>
+          <h3 class="card-headline">AI underwriting startup Sixfold partners with Sollers Consulting to speed carrier transformations</h3>
+          <p class="card-summary">Sixfold will pair its AI-driven risk-assessment technology with Sollers&#x27; consulting and implementation expertise to help insurance carriers move faster on underwriting modernization projects.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/08/14/sixfold-and-sollers-team-up-on-ai-underwriting/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="bolt debuts what it calls an industry-first ai insurance platform bolt launched a new ai-driven platform aimed at reshaping how insurance products are built and distributed, part of a broader wave of insurtechs racing to embed generative ai across the policy lifecycle. ai insurance platform launch">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI Insurance Platform Launch</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-19</div>
+          <h3 class="card-headline">Bolt debuts what it calls an industry-first AI insurance platform</h3>
+          <p class="card-summary">Bolt launched a new AI-driven platform aimed at reshaping how insurance products are built and distributed, part of a broader wave of insurtechs racing to embed generative AI across the policy lifecycle.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/08/19/bolt-debuts-industry-first-ai-insurance-platform/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-health-insurance-payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States"
+                 data-search="providence health plan to shut down entirely after medicare advantage sale collapses the renton, washington-based nonprofit&#x27;s roughly 440,000-member health plan will wind down after talks with an unnamed carrier to keep its medicare advantage book alive fell apart; coverage continues without interruption through the end of 2026. medicare advantage wind-down">
+          <div class="card-tags">
+            <span class="tag tag-topic">Medicare Advantage Wind-Down</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-15</div>
+          <h3 class="card-headline">Providence Health Plan to shut down entirely after Medicare Advantage sale collapses</h3>
+          <p class="card-summary">The Renton, Washington-based nonprofit&#x27;s roughly 440,000-member health plan will wind down after talks with an unnamed carrier to keep its Medicare Advantage book alive fell apart; coverage continues without interruption through the end of 2026.</p>
+          <div class="card-footer">
+            <span class="card-source">Healthcare Dive</span>
+            <a class="card-link" href="https://www.healthcaredive.com/news/providence-health-plan-medicare-advantage-deal-fails-closure/828195/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States"
+                 data-search="more insurers retreat from aca marketplaces for 2027, including medica and elevance medica will stop offering individual aca marketplace plans in iowa, kansas and oklahoma, while elevance is exiting ohio&#x27;s small-group exchange, part of a wave of at least 11 insurers scaling back aca participation amid falling enrollment and the expiration of enhanced premium tax credits. aca marketplace exits">
+          <div class="card-tags">
+            <span class="tag tag-topic">ACA Marketplace Exits</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-10</div>
+          <h3 class="card-headline">More insurers retreat from ACA marketplaces for 2027, including Medica and Elevance</h3>
+          <p class="card-summary">Medica will stop offering individual ACA marketplace plans in Iowa, Kansas and Oklahoma, while Elevance is exiting Ohio&#x27;s small-group exchange, part of a wave of at least 11 insurers scaling back ACA participation amid falling enrollment and the expiration of enhanced premium tax credits.</p>
+          <div class="card-footer">
+            <span class="card-source">Becker&#x27;s Payer Issues</span>
+            <a class="card-link" href="https://www.beckerspayer.com/payer/aca/elevance-to-exit-small-group-aca-market-in-ohio/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="cms star-rating recalculation reshapes 2027 medicare advantage bonus payments kff updated its brief on the medicare advantage quality bonus program to reflect how cms&#x27;s recent recalculation of plan star ratings affects the more than $13 billion in bonus payments expected across the program. ma quality bonus program">
+          <div class="card-tags">
+            <span class="tag tag-topic">MA Quality Bonus Program</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-12</div>
+          <h3 class="card-headline">CMS star-rating recalculation reshapes 2027 Medicare Advantage bonus payments</h3>
+          <p class="card-summary">KFF updated its brief on the Medicare Advantage Quality Bonus Program to reflect how CMS&#x27;s recent recalculation of plan star ratings affects the more than $13 billion in bonus payments expected across the program.</p>
+          <div class="card-footer">
+            <span class="card-source">KFF</span>
+            <a class="card-link" href="https://www.kff.org/medicare/medicare-will-spend-more-than-13-billion-on-the-medicare-advantage-quality-bonus-program-in-2026/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-healthcare-provider-clinical" data-vertical-section="Healthcare / Provider &amp; Clinical">
+      <div class="section-head">
+        <h2 class="section-title">Healthcare / Provider &amp; Clinical</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Technology &amp; AI" data-geo="United States"
+                 data-search="hospitals report major documentation-time savings from ambient ai scribes intermountain health cut time spent on visit notes by 27% using microsoft&#x27;s dragon copilot, while cooper university healthcare says clinicians save more than an hour of documentation time daily using similar ambient ai tools. ambient ai documentation">
+          <div class="card-tags">
+            <span class="tag tag-topic">Ambient AI Documentation</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-08</div>
+          <h3 class="card-headline">Hospitals report major documentation-time savings from ambient AI scribes</h3>
+          <p class="card-summary">Intermountain Health cut time spent on visit notes by 27% using Microsoft&#x27;s Dragon Copilot, while Cooper University Healthcare says clinicians save more than an hour of documentation time daily using similar ambient AI tools.</p>
+          <div class="card-footer">
+            <span class="card-source">The Daily Health AI Chronicle</span>
+            <a class="card-link" href="https://thedaily.health/daily-health-ai-chronicle-august-8-2026/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="wellsky expands care-transition analytics with new intelligence dashboards wellsky&#x27;s careport suite now includes dashboards tracking discharge bottlenecks, peer performance and provider responsiveness across the more than 2,000 hospitals and 120,000 post-acute providers on its network. care transition analytics">
+          <div class="card-tags">
+            <span class="tag tag-topic">Care Transition Analytics</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-23</div>
+          <h3 class="card-headline">WellSky expands care-transition analytics with new intelligence dashboards</h3>
+          <p class="card-summary">WellSky&#x27;s CarePort suite now includes dashboards tracking discharge bottlenecks, peer performance and provider responsiveness across the more than 2,000 hospitals and 120,000 post-acute providers on its network.</p>
+          <div class="card-footer">
+            <span class="card-source">WellSky</span>
+            <a class="card-link" href="https://wellsky.com/wellsky-launches-care-transition-intelligence-dashboards-to-turn-data-into-outcomes/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>
