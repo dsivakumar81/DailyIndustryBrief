@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #12</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">August 24, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #12</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">10</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">6</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">5</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">16</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option><option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option><option value="APAC">APAC</option><option value="Global">Global</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button><button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Retirement">Retirement</button><button class="chip" data-filter-type="vertical" data-value="Investments">Investments</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="TPA">TPA</button><button class="chip" data-filter-type="vertical" data-value="FinTech">FinTech</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button><button class="chip" data-filter-type="vertical" data-value="Healthcare / Provider &amp; Clinical">Healthcare / Provider &amp; Clinical</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button><button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Technology &amp; AI">Technology &amp; AI</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-retirement" class="toc-link">Retirement</a><a href="#v-investments" class="toc-link">Investments</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-fintech" class="toc-link">FinTech</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance-payer" class="toc-link">Health Insurance / Payer</a><a href="#v-healthcare-provider-clinical" class="toc-link">Healthcare / Provider &amp; Clinical</a></nav>
+
+<main class="main" id="main">
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Market Economics" data-geo="India"
+                 data-search="s&amp;p sees india&#x27;s insurance sector poised for &#x27;massive&#x27; long-term growth despite near-term headwinds s&amp;p global ratings said structural reforms, low insurance penetration and a supportive regulatory environment should drive substantial long-term growth for india&#x27;s insurance industry, even as slowing economic growth and profitability pressures pose near-term risks. despite near-term headwinds">
+          <div class="card-tags">
+            <span class="tag tag-topic">despite near-term headwinds</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-08-06</div>
+          <h3 class="card-headline">S&amp;P sees India&#x27;s insurance sector poised for &#x27;massive&#x27; long-term growth despite near-term headwinds</h3>
+          <p class="card-summary">S&amp;P Global Ratings said structural reforms, low insurance penetration and a supportive regulatory environment should drive substantial long-term growth for India&#x27;s insurance industry, even as slowing economic growth and profitability pressures pose near-term risks.</p>
+          <div class="card-footer">
+            <span class="card-source">Business Standard</span>
+            <a class="card-link" href="https://www.business-standard.com/industry/news/low-insurance-penetration-reforms-to-drive-massive-growth-in-india-s-insurance-sector-s-p-126080600828_1.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Market Economics" data-geo="United States"
+                 data-search="metlife&#x27;s second-quarter profit climbs 15% as group benefits segment leads growth metlife reported second-quarter 2026 adjusted earnings of roughly $1.6 billion, up 15% year over year, with its group benefits unit posting a 25% jump in adjusted earnings on stronger underwriting and volume growth. segment leads growth">
+          <div class="card-tags">
+            <span class="tag tag-topic">segment leads growth</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-05</div>
+          <h3 class="card-headline">MetLife&#x27;s second-quarter profit climbs 15% as group benefits segment leads growth</h3>
+          <p class="card-summary">MetLife reported second-quarter 2026 adjusted earnings of roughly $1.6 billion, up 15% year over year, with its group benefits unit posting a 25% jump in adjusted earnings on stronger underwriting and volume growth.</p>
+          <div class="card-footer">
+            <span class="card-source">Yahoo Finance</span>
+            <a class="card-link" href="https://finance.yahoo.com/markets/stocks/articles/metlife-q2-earnings-call-highlights-180353019.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-retirement" data-vertical-section="Retirement">
+      <div class="section-head">
+        <h2 class="section-title">Retirement</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Retirement" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="irs proposes updated funding rules for single-employer pension plans the irs issued proposed regulations updating minimum funding requirements for single-employer defined benefit pension plans, scheduled for federal register publication on august 20, 2026, giving plan sponsors revised guidance on funding calculations. single-employer pension plans">
+          <div class="card-tags">
+            <span class="tag tag-topic">single-employer pension plans</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-20</div>
+          <h3 class="card-headline">IRS proposes updated funding rules for single-employer pension plans</h3>
+          <p class="card-summary">The IRS issued proposed regulations updating minimum funding requirements for single-employer defined benefit pension plans, scheduled for Federal Register publication on August 20, 2026, giving plan sponsors revised guidance on funding calculations.</p>
+          <div class="card-footer">
+            <span class="card-source">PSCA</span>
+            <a class="card-link" href="https://www.psca.org/news/psca-news/2026/8/irs-proposes-updates-to-single-employer-pension-funding-rules/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-investments" data-vertical-section="Investments">
+      <div class="section-head">
+        <h2 class="section-title">Investments</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Investments" data-lens="Market Economics" data-geo="APAC"
+                 data-search="ping an&#x27;s first-half profit surges 36% as china&#x27;s market rally lifts asset management income ping an insurance reported a better-than-expected 36% year-on-year rise in first-half net profit, as a rally in mainland chinese equities boosted fee income and investment gains within its asset management business. asset management income">
+          <div class="card-tags">
+            <span class="tag tag-topic">asset management income</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-08-21</div>
+          <h3 class="card-headline">Ping An&#x27;s first-half profit surges 36% as China&#x27;s market rally lifts asset management income</h3>
+          <p class="card-summary">Ping An Insurance reported a better-than-expected 36% year-on-year rise in first-half net profit, as a rally in mainland Chinese equities boosted fee income and investment gains within its asset management business.</p>
+          <div class="card-footer">
+            <span class="card-source">Nikkei Asia</span>
+            <a class="card-link" href="https://asia.nikkei.com/business/insurance/ping-an-insurance-s-first-half-profit-jumps-36-on-asset-management-boost" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Investments" data-lens="Investments &amp; Funding" data-geo="Global"
+                 data-search="pimco keeps drawing outside client cash as top shareholder allianz raises its stake pimco pulled in 31.7 billion euros of third-party net inflows in the second quarter and continued gathering assets into july, even as parent allianz moved to increase its ownership stake in the asset manager. allianz raises stake">
+          <div class="card-tags">
+            <span class="tag tag-topic">Allianz raises stake</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-07</div>
+          <h3 class="card-headline">PIMCO keeps drawing outside client cash as top shareholder Allianz raises its stake</h3>
+          <p class="card-summary">PIMCO pulled in 31.7 billion euros of third-party net inflows in the second quarter and continued gathering assets into July, even as parent Allianz moved to increase its ownership stake in the asset manager.</p>
+          <div class="card-footer">
+            <span class="card-source">Bloomberg</span>
+            <a class="card-link" href="https://www.bloomberg.com/news/articles/2026-08-07/pimco-keeps-pulling-in-money-as-insurer-allianz-boosts-stake" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="Regulatory &amp; Policy" data-geo="UK/Europe"
+                 data-search="eu supervisors move to simplify margin rules and streamline retail investment disclosures europe&#x27;s banking, insurance and securities regulators published a joint report proposing simpler bilateral margin requirements for uncleared derivatives, alongside a parallel push to make priips retail investment and insurance product disclosures more digital-friendly. retail investment disclosures">
+          <div class="card-tags">
+            <span class="tag tag-topic">retail investment disclosures</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-08-03</div>
+          <h3 class="card-headline">EU supervisors move to simplify margin rules and streamline retail investment disclosures</h3>
+          <p class="card-summary">Europe&#x27;s banking, insurance and securities regulators published a joint report proposing simpler bilateral margin requirements for uncleared derivatives, alongside a parallel push to make PRIIPs retail investment and insurance product disclosures more digital-friendly.</p>
+          <div class="card-footer">
+            <span class="card-source">Sidley Austin</span>
+            <a class="card-link" href="https://www.sidley.com/en/insights/newsupdates/2026/08/uk-eu-investment-management-update-august-2026" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="India"
+                 data-search="india&#x27;s general insurance industry grows 9% to reach rs 3.36 lakh crore in fy26 india&#x27;s general insurance sector closed fy26 with gross direct premium income up 9% year-on-year to roughly rs 3.36 lakh crore, with private insurers, including standalone health insurers, growing faster than public-sector peers. lakh crore fy26">
+          <div class="card-tags">
+            <span class="tag tag-topic">lakh crore FY26</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-08-06</div>
+          <h3 class="card-headline">India&#x27;s general insurance industry grows 9% to reach Rs 3.36 lakh crore in FY26</h3>
+          <p class="card-summary">India&#x27;s general insurance sector closed FY26 with gross direct premium income up 9% year-on-year to roughly Rs 3.36 lakh crore, with private insurers, including standalone health insurers, growing faster than public-sector peers.</p>
+          <div class="card-footer">
+            <span class="card-source">Lokmat Times</span>
+            <a class="card-link" href="https://www.lokmattimes.com/business/indias-general-insurance-industry-grows-9-pc-in-fy26-to-rs-336-lakh-crore/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="M&amp;A" data-geo="United States"
+                 data-search="american family to acquire specialty insurer bowhead specialty in $1.2 billion deal american family agreed to buy the remaining shares of bowhead specialty holdings for $34 per share in cash, a roughly $1.2 billion transaction that deepens its existing partnership with the casualty and professional-liability specialty insurer. $1.2 billion deal">
+          <div class="card-tags">
+            <span class="tag tag-topic">$1.2 billion deal</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-03</div>
+          <h3 class="card-headline">American Family to acquire specialty insurer Bowhead Specialty in $1.2 billion deal</h3>
+          <p class="card-summary">American Family agreed to buy the remaining shares of Bowhead Specialty Holdings for $34 per share in cash, a roughly $1.2 billion transaction that deepens its existing partnership with the casualty and professional-liability specialty insurer.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Journal</span>
+            <a class="card-link" href="https://www.insurancejournal.com/news/national/2026/08/03/879954.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="People &amp; Leadership" data-geo="United States"
+                 data-search="standards body acord names john kellington as chief executive acord appointed john kellington, most recently evp and cio at cincinnati insurance, as its new ceo, returning him to the insurance-data-standards organization where he previously helped build its architecture. kellington chief executive">
+          <div class="card-tags">
+            <span class="tag tag-topic">Kellington chief executive</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-11</div>
+          <h3 class="card-headline">Standards body ACORD names John Kellington as chief executive</h3>
+          <p class="card-summary">ACORD appointed John Kellington, most recently EVP and CIO at Cincinnati Insurance, as its new CEO, returning him to the insurance-data-standards organization where he previously helped build its architecture.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/acord-names-john-kellington-chief-executive-officer-302847323.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-fintech" data-vertical-section="FinTech">
+      <div class="section-head">
+        <h2 class="section-title">FinTech</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="FinTech" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="embedded finance moves into a more predictive, ai-driven phase analysts say embedded finance is shifting from simply placing financial products inside other platforms toward ai-driven tools that anticipate customer needs, with the global market projected to grow from about $94 billion in 2025 to over $115 billion in 2026. predictive ai-driven phase">
+          <div class="card-tags">
+            <span class="tag tag-topic">predictive AI-driven phase</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08-21</div>
+          <h3 class="card-headline">Embedded finance moves into a more predictive, AI-driven phase</h3>
+          <p class="card-summary">Analysts say embedded finance is shifting from simply placing financial products inside other platforms toward AI-driven tools that anticipate customer needs, with the global market projected to grow from about $94 billion in 2025 to over $115 billion in 2026.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/08/21/embedded-finance-enters-its-next-phase-of-growth/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="FinTech" data-lens="Investments &amp; Funding" data-geo="UK/Europe"
+                 data-search="payments and ai drive $361 million in fintech funding, led by ingenico&#x27;s 150 million euro raise sixteen fintech funding deals totaled about $361 million in one week, with france-based payments technology firm ingenico&#x27;s 150 million euro raise, led by pimco, standing as the largest disclosed equity deal. million euro raise">
+          <div class="card-tags">
+            <span class="tag tag-topic">million euro raise</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-08-21</div>
+          <h3 class="card-headline">Payments and AI drive $361 million in fintech funding, led by Ingenico&#x27;s 150 million euro raise</h3>
+          <p class="card-summary">Sixteen fintech funding deals totaled about $361 million in one week, with France-based payments technology firm Ingenico&#x27;s 150 million euro raise, led by PIMCO, standing as the largest disclosed equity deal.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/08/21/payments-and-ai-drive-361m-in-fintech-funding-this-week/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="People &amp; Leadership" data-geo="Global"
+                 data-search="sapiens hands ceo role to cfo paul wheeler as it pushes ai-native software strategy insurance software vendor sapiens named finance chief paul wheeler as its next ceo, with outgoing leader mike ettling continuing as executive chairman to support the transition as the company builds out ai-native offerings. ai-native software strategy">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI-native software strategy</span>
+            <span class="tag tag-lens">People &amp; Leadership</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-07-30</div>
+          <h3 class="card-headline">Sapiens hands CEO role to CFO Paul Wheeler as it pushes AI-native software strategy</h3>
+          <p class="card-summary">Insurance software vendor Sapiens named finance chief Paul Wheeler as its next CEO, with outgoing leader Mike Ettling continuing as executive chairman to support the transition as the company builds out AI-native offerings.</p>
+          <div class="card-footer">
+            <span class="card-source">Sapiens</span>
+            <a class="card-link" href="https://sapiens.com/newsroom/sapiens-appoints-paul-wheeler-as-chief-executive-officer/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-health-insurance-payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States"
+                 data-search="aon projects employer health-care costs will jump 9.5% in 2027, a fourth straight year near double digits aon&#x27;s analysis of over 1,100 u.s. employers found projected 2027 health benefit costs rising 9.5% to above $19,000 per employee, driven by rising medical utilization, chronic disease prevalence and glp-1 drug spending, extending a multi-year run of elevated cost trends. near double digits">
+          <div class="card-tags">
+            <span class="tag tag-topic">near double digits</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-20</div>
+          <h3 class="card-headline">Aon projects employer health-care costs will jump 9.5% in 2027, a fourth straight year near double digits</h3>
+          <p class="card-summary">Aon&#x27;s analysis of over 1,100 U.S. employers found projected 2027 health benefit costs rising 9.5% to above $19,000 per employee, driven by rising medical utilization, chronic disease prevalence and GLP-1 drug spending, extending a multi-year run of elevated cost trends.</p>
+          <div class="card-footer">
+            <span class="card-source">PR Newswire (Aon)</span>
+            <a class="card-link" href="https://www.prnewswire.com/news-releases/aon-us-employer-health-care-costs-continue-multi-year-climb-projected-to-rise-9-5-in-2027--302855864.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="health net&#x27;s move to end an assisted-living benefit leaves thousands of medi-cal seniors scrambling centene&#x27;s health net told california regulators it will eliminate a calaim assisted-living support benefit for roughly 3,500 medi-cal members by year&#x27;s end, citing rising costs, a decision advocates warn could leave some elderly residents without housing options. medi-cal seniors scrambling">
+          <div class="card-tags">
+            <span class="tag tag-topic">Medi-Cal seniors scrambling</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-17</div>
+          <h3 class="card-headline">Health Net&#x27;s move to end an assisted-living benefit leaves thousands of Medi-Cal seniors scrambling</h3>
+          <p class="card-summary">Centene&#x27;s Health Net told California regulators it will eliminate a CalAIM assisted-living support benefit for roughly 3,500 Medi-Cal members by year&#x27;s end, citing rising costs, a decision advocates warn could leave some elderly residents without housing options.</p>
+          <div class="card-footer">
+            <span class="card-source">CalMatters</span>
+            <a class="card-link" href="https://calmatters.org/health/2026/08/assisted-living-healthnet-coverage/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="alignment healthcare moves to dismiss whistleblower suit alleging it inflated earnings alignment healthcare filed a motion to dismiss a lawsuit from a former chief data officer who alleges the medicare advantage insurer misclassified $8-10 million in expenses to inflate ebitda and boost its stock price and executive bonuses. it inflated earnings">
+          <div class="card-tags">
+            <span class="tag tag-topic">it inflated earnings</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-13</div>
+          <h3 class="card-headline">Alignment Healthcare moves to dismiss whistleblower suit alleging it inflated earnings</h3>
+          <p class="card-summary">Alignment Healthcare filed a motion to dismiss a lawsuit from a former chief data officer who alleges the Medicare Advantage insurer misclassified $8-10 million in expenses to inflate EBITDA and boost its stock price and executive bonuses.</p>
+          <div class="card-footer">
+            <span class="card-source">Modern Healthcare</span>
+            <a class="card-link" href="https://www.modernhealthcare.com/insurance/mh-alignment-healthcare-whistleblower-lawsuit-dismissal/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-healthcare-provider-clinical" data-vertical-section="Healthcare / Provider &amp; Clinical">
+      <div class="section-head">
+        <h2 class="section-title">Healthcare / Provider &amp; Clinical</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="atrium health-wakemed merger draws public pushback at raleigh hearing a public hearing on the proposed atrium health-wakemed combination drew mixed reaction in raleigh, with some speakers welcoming the deal&#x27;s promised $2 billion investment and others criticizing it as a takeover of the community-owned system. pushback raleigh hearing">
+          <div class="card-tags">
+            <span class="tag tag-topic">pushback Raleigh hearing</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-17</div>
+          <h3 class="card-headline">Atrium Health-WakeMed merger draws public pushback at Raleigh hearing</h3>
+          <p class="card-summary">A public hearing on the proposed Atrium Health-WakeMed combination drew mixed reaction in Raleigh, with some speakers welcoming the deal&#x27;s promised $2 billion investment and others criticizing it as a takeover of the community-owned system.</p>
+          <div class="card-footer">
+            <span class="card-source">Chief Healthcare Executive</span>
+            <a class="card-link" href="https://www.chiefhealthcareexecutive.com/view/wakemed-health-atrium-health-plan-merger-and-face-criticism" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>
