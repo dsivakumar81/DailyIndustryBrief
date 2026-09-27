@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #37</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">September 18, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #37</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">11</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">5</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">5</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">14</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option>
+        <option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option><option value="APAC">APAC</option><option value="Global">Global</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button>
+      <button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Retirement">Retirement</button><button class="chip" data-filter-type="vertical" data-value="Investments">Investments</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="TPA">TPA</button><button class="chip" data-filter-type="vertical" data-value="FinTech">FinTech</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button><button class="chip" data-filter-type="vertical" data-value="Healthcare / Provider &amp; Clinical">Healthcare / Provider &amp; Clinical</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button>
+      <button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Technology &amp; AI">Technology &amp; AI</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-retirement" class="toc-link">Retirement</a><a href="#v-investments" class="toc-link">Investments</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-tpa" class="toc-link">TPA</a><a href="#v-fintech" class="toc-link">FinTech</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance-payer" class="toc-link">Health Insurance / Payer</a><a href="#v-healthcare-provider-clinical" class="toc-link">Healthcare / Provider &amp; Clinical</a></nav>
+
+<main class="main" id="main">
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Regulatory &amp; Policy" data-geo="India"
+                 data-search="indian insurer shares rally on hopes irdai will cap distribution commissions shares of indian life and general insurers rose on september 18 as investors anticipated a regulatory consultation paper that could cap the commissions insurers pay banks for distribution, a move that would lower acquisition costs and could widen underwriting margins. life &amp; annuities regulatory &amp; policy india whalesbook indian insurer shares rally">
+          <div class="card-tags">
+            <span class="tag tag-topic">Indian insurer shares rally</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-09-18</div>
+          <h3 class="card-headline">Indian insurer shares rally on hopes IRDAI will cap distribution commissions</h3>
+          <p class="card-summary">Shares of Indian life and general insurers rose on September 18 as investors anticipated a regulatory consultation paper that could cap the commissions insurers pay banks for distribution, a move that would lower acquisition costs and could widen underwriting margins.</p>
+          <div class="card-footer">
+            <span class="card-source">Whalesbook</span>
+            <a class="card-link" href="https://www.whalesbook.com/news/English/insurance/Insurance-Shares-Rise-on-Hopes-of-IRDAI-Commission-Caps/6aac34f9ed7f8e81734ec9ce" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-retirement" data-vertical-section="Retirement">
+      <div class="section-head">
+        <h2 class="section-title">Retirement</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Retirement" data-lens="Market Economics" data-geo="United States"
+                 data-search="401(k) balances hit record highs as long-tenured savers cross $270,000 an analysis of more than 55 million retirement accounts found women continuously enrolled in a 401(k) for at least five years reached an average balance of $273,400 in q2 2026, while millennial balances climbed 14.2% year-over-year to $94,300. retirement market economics united states asppa 401(k) balances hit record">
+          <div class="card-tags">
+            <span class="tag tag-topic">401(k) balances hit record</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-16</div>
+          <h3 class="card-headline">401(k) balances hit record highs as long-tenured savers cross $270,000</h3>
+          <p class="card-summary">An analysis of more than 55 million retirement accounts found women continuously enrolled in a 401(k) for at least five years reached an average balance of $273,400 in Q2 2026, while millennial balances climbed 14.2% year-over-year to $94,300.</p>
+          <div class="card-footer">
+            <span class="card-source">ASPPA</span>
+            <a class="card-link" href="https://www.asppa-net.org/news/2026/9/record-high-retirement-balances-workers-prioritize-saving/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-investments" data-vertical-section="Investments">
+      <div class="section-head">
+        <h2 class="section-title">Investments</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Investments" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="insurers weigh fixed-income allocations as ai-driven bond issuance surges apollo&#x27;s fixed-income strategists examined how a boom in ai-infrastructure-linked debt issuance is reshaping credit markets and what it means for institutional and insurance-company bond portfolios seeking yield and diversification. investments technology &amp; ai global apollo global management insurers weigh fixed-income allocations">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurers weigh fixed-income allocations</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-09-15</div>
+          <h3 class="card-headline">Insurers weigh fixed-income allocations as AI-driven bond issuance surges</h3>
+          <p class="card-summary">Apollo&#x27;s fixed-income strategists examined how a boom in AI-infrastructure-linked debt issuance is reshaping credit markets and what it means for institutional and insurance-company bond portfolios seeking yield and diversification.</p>
+          <div class="card-footer">
+            <span class="card-source">Apollo Global Management</span>
+            <a class="card-link" href="https://www.apollo.com/institutional/insights-news/insights/podcast/the-allocation/2026/09/fixed-income-the-ai-issuance-boom-and-what-it-means-for-portfolios" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="Regulatory &amp; Policy" data-geo="UK/Europe"
+                 data-search="eu regulators press for ai-risk oversight as eiopa chief&#x27;s term is extended the eu&#x27;s three financial supervisory authorities called on banks, insurers and investment firms to recalibrate ict risk controls for frontier ai models, while the council of the eu separately extended eiopa chair petra hielkema&#x27;s mandate for a second five-year term starting september 1. wealth management regulatory &amp; policy uk/europe sidley austin eu regulators press for">
+          <div class="card-tags">
+            <span class="tag tag-topic">EU regulators press for</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">UK/Europe</span>
+          </div>
+          <div class="card-date">2026-09-01</div>
+          <h3 class="card-headline">EU regulators press for AI-risk oversight as EIOPA chief&#x27;s term is extended</h3>
+          <p class="card-summary">The EU&#x27;s three financial supervisory authorities called on banks, insurers and investment firms to recalibrate ICT risk controls for frontier AI models, while the Council of the EU separately extended EIOPA chair Petra Hielkema&#x27;s mandate for a second five-year term starting September 1.</p>
+          <div class="card-footer">
+            <span class="card-source">Sidley Austin</span>
+            <a class="card-link" href="https://www.sidley.com/en/insights/newsupdates/2026/09/uk-eu-investment-management-update-september-2026" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="M&amp;A" data-geo="Global"
+                 data-search="zurich&#x27;s pending beazley deal would make it the largest cyber insurer a specialty-lines market report noted chubb currently leads cyber insurance premium volume, but zurich&#x27;s announced acquisition of beazley would vault it to the top spot once the deal closes, reshaping the competitive order in cyber underwriting. property &amp; casualty m&amp;a global crc group zurich&#x27;s pending beazley deal">
+          <div class="card-tags">
+            <span class="tag tag-topic">Zurich&#x27;s pending Beazley deal</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-09-01</div>
+          <h3 class="card-headline">Zurich&#x27;s pending Beazley deal would make it the largest cyber insurer</h3>
+          <p class="card-summary">A specialty-lines market report noted Chubb currently leads cyber insurance premium volume, but Zurich&#x27;s announced acquisition of Beazley would vault it to the top spot once the deal closes, reshaping the competitive order in cyber underwriting.</p>
+          <div class="card-footer">
+            <span class="card-source">CRC Group</span>
+            <a class="card-link" href="https://www.crcgroup.com/Tools-Intel/Specialty-Tools-Intel/2026-cyber-state-of-the-market-at-a-glance" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Regulatory &amp; Policy" data-geo="APAC"
+                 data-search="beijing extends first-ever recapitalization to state insurers china&#x27;s government included state-owned insurers for the first time in a roughly $53.6 billion capital injection program alongside state banks, though analysts noted the relatively modest insurer allocation reflects already-healthy capital positions. property &amp; casualty regulatory &amp; policy apac insurance business asia beijing extends first-ever recapitalization">
+          <div class="card-tags">
+            <span class="tag tag-topic">Beijing extends first-ever recapitalization</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-09-06</div>
+          <h3 class="card-headline">Beijing extends first-ever recapitalization to state insurers</h3>
+          <p class="card-summary">China&#x27;s government included state-owned insurers for the first time in a roughly $53.6 billion capital injection program alongside state banks, though analysts noted the relatively modest insurer allocation reflects already-healthy capital positions.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Business Asia</span>
+            <a class="card-link" href="https://www.insurancebusinessmag.com/asia/news/breaking-news/chinas-state-insurers-receive-firstever-government-recapitalisation-589042.aspx" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Regulatory &amp; Policy" data-geo="APAC"
+                 data-search="china proposes fivefold hike in minimum insurer capital requirements china&#x27;s national financial regulatory administration released a draft revision to the insurance law that would raise insurers&#x27; minimum registered capital roughly fivefold, from cny200 million to cny1 billion (about $149 million). property &amp; casualty regulatory &amp; policy apac business insurance china proposes fivefold hike">
+          <div class="card-tags">
+            <span class="tag tag-topic">China proposes fivefold hike</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-09-10</div>
+          <h3 class="card-headline">China proposes fivefold hike in minimum insurer capital requirements</h3>
+          <p class="card-summary">China&#x27;s National Financial Regulatory Administration released a draft revision to the Insurance Law that would raise insurers&#x27; minimum registered capital roughly fivefold, from CNY200 million to CNY1 billion (about $149 million).</p>
+          <div class="card-footer">
+            <span class="card-source">Business Insurance</span>
+            <a class="card-link" href="https://www.businessinsurance.com/china-proposes-fivefold-increase-in-insurer-capital/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="Market Economics" data-geo="United States"
+                 data-search="us surplus lines premium hits record $143 billion as placement shifts excess and surplus lines premium in the us climbed to a record roughly $143 billion, insurance business reported, as specialty and non-admitted capacity continues to take share from the standard admitted market. brokers &amp; mga/ga market economics united states insurance business america us surplus lines premium">
+          <div class="card-tags">
+            <span class="tag tag-topic">US surplus lines premium</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-14</div>
+          <h3 class="card-headline">US surplus lines premium hits record $143 billion as placement shifts</h3>
+          <p class="card-summary">Excess and surplus lines premium in the US climbed to a record roughly $143 billion, Insurance Business reported, as specialty and non-admitted capacity continues to take share from the standard admitted market.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Business America</span>
+            <a class="card-link" href="https://www.insurancebusinessmag.com/us/news/excess-surplus/surplus-lines-hit-143bn-record-as-placement-market-shifts-589475.aspx" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-tpa" data-vertical-section="TPA">
+      <div class="section-head">
+        <h2 class="section-title">TPA</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="TPA" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="illumifin wins five-year calpers long-term-care tpa contract calpers approved a five-year third-party-administrator contract with illumifin to run its long-term care insurance program from july 2026 through june 2031, continuing the state pension system&#x27;s outsourced claims and policy administration. tpa regulatory &amp; policy united states calpers illumifin wins five-year calpers">
+          <div class="card-tags">
+            <span class="tag tag-topic">Illumifin wins five-year CalPERS</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-15</div>
+          <h3 class="card-headline">Illumifin wins five-year CalPERS long-term-care TPA contract</h3>
+          <p class="card-summary">CalPERS approved a five-year third-party-administrator contract with Illumifin to run its long-term care insurance program from July 2026 through June 2031, continuing the state pension system&#x27;s outsourced claims and policy administration.</p>
+          <div class="card-footer">
+            <span class="card-source">CalPERS</span>
+            <a class="card-link" href="https://www.calpers.ca.gov/documents/202509-pension-item-3a-a/download" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-fintech" data-vertical-section="FinTech">
+      <div class="section-head">
+        <h2 class="section-title">FinTech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="FinTech" data-lens="Technology &amp; AI" data-geo="Global"
+                 data-search="embedded-finance player parafin extends reach into auto dealer software parafin partnered with dealer-technology provider tekion to embed its pay over time financing product into tekion pay, letting auto dealerships split business invoices into biweekly installments instead of paying upfront. fintech technology &amp; ai global fintech global embedded-finance player parafin extends">
+          <div class="card-tags">
+            <span class="tag tag-topic">Embedded-finance player Parafin extends</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-09-11</div>
+          <h3 class="card-headline">Embedded-finance player Parafin extends reach into auto dealer software</h3>
+          <p class="card-summary">Parafin partnered with dealer-technology provider Tekion to embed its Pay Over Time financing product into Tekion Pay, letting auto dealerships split business invoices into biweekly installments instead of paying upfront.</p>
+          <div class="card-footer">
+            <span class="card-source">FinTech Global</span>
+            <a class="card-link" href="https://fintech.global/2026/09/11/parafin-expands-embedded-finance-with-tekion-partnership/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="Investments &amp; Funding" data-geo="United States"
+                 data-search="ai medical-liability insurtech indigo raises $50 million series b indigo, an ai-driven platform underwriting medical professional liability coverage, closed a $50 million series b round to expand its data-driven risk assessment tools for healthcare providers. insurtech investments &amp; funding united states insnerds ai medical-liability insurtech indigo">
+          <div class="card-tags">
+            <span class="tag tag-topic">AI medical-liability insurtech Indigo</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-12</div>
+          <h3 class="card-headline">AI medical-liability insurtech Indigo raises $50 million Series B</h3>
+          <p class="card-summary">Indigo, an AI-driven platform underwriting medical professional liability coverage, closed a $50 million Series B round to expand its data-driven risk assessment tools for healthcare providers.</p>
+          <div class="card-footer">
+            <span class="card-source">InsNerds</span>
+            <a class="card-link" href="https://insnerds.com/news/insurtech-indigo-raises-50m-series-b-funding-round" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-health-insurance-payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="house gop bill would steer medpac&#x27;s medicare advantage overpayment math house ways and means republicans advanced a bill directing the medicare payment advisory commission to restate its methodology for estimating medicare advantage overpayments in a way critics say would favor insurers over a stricter apples-to-apples comparison with traditional medicare. health insurance / payer regulatory &amp; policy united states stat news house gop bill would">
+          <div class="card-tags">
+            <span class="tag tag-topic">House GOP bill would</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-16</div>
+          <h3 class="card-headline">House GOP bill would steer MedPAC&#x27;s Medicare Advantage overpayment math</h3>
+          <p class="card-summary">House Ways and Means Republicans advanced a bill directing the Medicare Payment Advisory Commission to restate its methodology for estimating Medicare Advantage overpayments in a way critics say would favor insurers over a stricter apples-to-apples comparison with traditional Medicare.</p>
+          <div class="card-footer">
+            <span class="card-source">STAT News</span>
+            <a class="card-link" href="https://www.statnews.com/2026/09/16/medicare-advantage-overpayments-analysis-medpac-change-apples-to-apples-act/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States"
+                 data-search="white house orders $500 refunds to aca exchange enrollees over fee overcharges the administration announced roughly $500 rebates to nearly a million people enrolled in federal aca exchanges, tied to user fees collected to fund exchange operations that regulators determined had overcharged enrollees. health insurance / payer regulatory &amp; policy united states hhs aspe white house orders $500">
+          <div class="card-tags">
+            <span class="tag tag-topic">White House orders $500</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-10</div>
+          <h3 class="card-headline">White House orders $500 refunds to ACA exchange enrollees over fee overcharges</h3>
+          <p class="card-summary">The administration announced roughly $500 rebates to nearly a million people enrolled in federal ACA exchanges, tied to user fees collected to fund exchange operations that regulators determined had overcharged enrollees.</p>
+          <div class="card-footer">
+            <span class="card-source">HHS ASPE</span>
+            <a class="card-link" href="https://aspe.hhs.gov/reports/aca-exchange-enrollment-2026" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="vertical-section" id="v-healthcare-provider-clinical" data-vertical-section="Healthcare / Provider &amp; Clinical">
+      <div class="section-head">
+        <h2 class="section-title">Healthcare / Provider &amp; Clinical</h2>
+        <span class="section-count">1 story</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Market Economics" data-geo="United States"
+                 data-search="health systems keep cutting jobs as medicaid reimbursement pressure bites umass memorial health&#x27;s community healthlink division moved to lay off 231 positions and close programs effective september 16, part of a wider 2026 wave of health-system job cuts driven by reduced medicaid reimbursement and rising uncompensated care costs. healthcare / provider &amp; clinical market economics united states becker&#x27;s hospital review health systems keep cutting">
+          <div class="card-tags">
+            <span class="tag tag-topic">Health systems keep cutting</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-16</div>
+          <h3 class="card-headline">Health systems keep cutting jobs as Medicaid reimbursement pressure bites</h3>
+          <p class="card-summary">UMass Memorial Health&#x27;s Community Healthlink division moved to lay off 231 positions and close programs effective September 16, part of a wider 2026 wave of health-system job cuts driven by reduced Medicaid reimbursement and rising uncompensated care costs.</p>
+          <div class="card-footer">
+            <span class="card-source">Becker&#x27;s Hospital Review</span>
+            <a class="card-link" href="https://www.beckershospitalreview.com/finance/the-hospitals-health-systems-cutting-jobs-in-2026/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>
