@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Intelligence Cockpit — Edition #10</title>
+<style>
+  :root {
+    --navy:#00294D; --navy-mid:#004B87; --navy-lt:#0067B1; --accent:#005EB8; --accent-br:#0078D4;
+    --white:#FFFFFF; --surf:#F7F8FA; --surf2:#EEF1F5; --surf3:#E2E7EE; --bdr:#D0D7E0; --bdr-mid:#B0BBCA;
+    --tx1:#00294D; --tx2:#1A2E40; --tx3:#4A5E72; --tx4:#7A8FA3; --txd:#A8B8C8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--surf); color: var(--tx2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; color: var(--navy); margin: 0; }
+  a { color: var(--accent); }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white); padding: 40px 32px 28px;
+  }
+  .header-inner { max-width: 1280px; margin: 0 auto; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .header-title { font-size: 2.1rem; color: var(--white); letter-spacing: 0.01em; }
+  .header-meta { font-size: 0.9rem; color: var(--txd); margin-top: 6px; font-family: Inter, sans-serif; }
+  .edition-badge {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+    padding: 8px 16px; border-radius: 20px; color: var(--white); white-space: nowrap;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .archive-select {
+    font-family: Inter, sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    padding: 8px 14px; border-radius: 20px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFFFFF' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  }
+  .archive-select:hover { border-color: rgba(255,255,255,0.5); }
+  .archive-select option { color: var(--tx1); background: var(--white); }
+  .stat-pills { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .stat-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+    padding: 10px 18px; min-width: 110px;
+  }
+  .stat-pill .num { font-family: Georgia, serif; font-size: 1.5rem; color: var(--white); display: block; line-height: 1.1; }
+  .stat-pill .lbl { font-size: 0.72rem; color: var(--txd); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .controls {
+    position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--bdr);
+    padding: 14px 32px; box-shadow: 0 2px 8px rgba(0,41,77,0.06);
+  }
+  .controls-inner { max-width: 1280px; margin: 0 auto; }
+  .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input {
+    flex: 1; padding: 10px 16px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-size: 0.95rem;
+    font-family: Inter, sans-serif; color: var(--tx1); background: var(--surf);
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); background: var(--white); }
+  .geo-select {
+    padding: 10px 14px; border: 1px solid var(--bdr-mid); border-radius: 8px; font-family: Inter, sans-serif;
+    font-size: 0.9rem; color: var(--tx1); background: var(--white); cursor: pointer;
+  }
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip {
+    font-family: Inter, sans-serif; font-size: 0.82rem; padding: 6px 14px; border-radius: 16px;
+    border: 1px solid var(--bdr-mid); background: var(--white); color: var(--tx3); cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+
+  .toc {
+    max-width: 1280px; margin: 0 auto; padding: 18px 32px 0; display: flex; gap: 8px 18px; flex-wrap: wrap;
+  }
+  .toc-link {
+    font-size: 0.82rem; color: var(--tx3); text-decoration: none; border-bottom: 1px dotted var(--bdr-mid);
+    padding-bottom: 2px;
+  }
+  .toc-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+
+  .section-head {
+    display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--navy); padding-bottom: 8px;
+    margin: 40px 0 20px;
+  }
+  .vertical-section:first-of-type .section-head { margin-top: 8px; }
+  .section-title { font-size: 1.5rem; }
+  .section-count { font-size: 0.82rem; color: var(--tx4); font-family: Inter, sans-serif; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--white); border: 1px solid var(--bdr); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,41,77,0.1); transform: translateY(-2px); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 3px 9px; border-radius: 4px;
+  }
+  .tag-topic { background: var(--surf3); color: var(--navy); }
+  .tag-lens { background: var(--navy); color: var(--white); }
+  .tag-geo { background: var(--white); color: var(--tx3); border: 1px solid var(--bdr-mid); }
+  .card-date { font-size: 0.75rem; color: var(--tx4); font-family: Inter, sans-serif; }
+  .card-headline { font-size: 1.08rem; line-height: 1.35; color: var(--tx1); }
+  .card-summary { font-size: 0.88rem; line-height: 1.5; color: var(--tx3); margin: 0; flex: 1; }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center; padding-top: 8px;
+    border-top: 1px solid var(--surf2); font-family: Inter, sans-serif;
+  }
+  .card-source { font-size: 0.78rem; color: var(--tx4); font-weight: 600; }
+  .card-link { font-size: 0.82rem; font-weight: 600; text-decoration: none; color: var(--accent); }
+  .card-link:hover { color: var(--accent-br); }
+
+  .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--tx4); font-family: Inter, sans-serif; }
+  .no-results.show { display: block; }
+
+  .footer {
+    background: var(--navy); color: var(--txd); padding: 32px; font-family: Inter, sans-serif; font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .footer-inner { max-width: 1280px; margin: 0 auto; }
+  .footer a { color: var(--white); }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 18px 20px; }
+    .header-title { font-size: 1.5rem; }
+    .controls { padding: 12px 18px; }
+    .main { padding: 20px 18px 40px; }
+    .toc { padding: 14px 18px 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Industry Intelligence Cockpit</h1>
+        <div class="header-meta">November 4, 2026 &middot; Cross-sector intelligence for insurance, healthcare &amp; wealth management</div>
+      </div>
+      <div class="header-actions">
+        <select id="archiveSelect" class="archive-select" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">Archive</option>
+          <!--ARCHIVE_OPTIONS-->
+        </select>
+        <div class="edition-badge">Edition #10</div>
+      </div>
+    </div>
+    <div class="stat-pills">
+      <div class="stat-pill"><span class="num">9</span><span class="lbl">Verticals</span></div>
+      <div class="stat-pill"><span class="num">6</span><span class="lbl">Lenses</span></div>
+      <div class="stat-pill"><span class="num">4</span><span class="lbl">Geographies</span></div>
+      <div class="stat-pill"><span class="num">19</span><span class="lbl">Stories Today</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search headlines, summaries, topics&hellip;">
+      <select id="geoSelect" class="geo-select">
+        <option value="All">All Geographies</option>
+        <option value="United States">United States</option><option value="India">India</option><option value="UK/Europe">UK/Europe</option><option value="APAC">APAC</option><option value="Global">Global</option>
+      </select>
+    </div>
+    <div class="chip-row" id="verticalChips">
+      <button class="chip active" data-filter-type="vertical" data-value="All">All Verticals</button>
+      <button class="chip" data-filter-type="vertical" data-value="Life &amp; Annuities">Life &amp; Annuities</button><button class="chip" data-filter-type="vertical" data-value="Retirement">Retirement</button><button class="chip" data-filter-type="vertical" data-value="Investments">Investments</button><button class="chip" data-filter-type="vertical" data-value="Wealth Management">Wealth Management</button><button class="chip" data-filter-type="vertical" data-value="Property &amp; Casualty">Property &amp; Casualty</button><button class="chip" data-filter-type="vertical" data-value="Brokers &amp; MGA/GA">Brokers &amp; MGA/GA</button><button class="chip" data-filter-type="vertical" data-value="TPA">TPA</button><button class="chip" data-filter-type="vertical" data-value="FinTech">FinTech</button><button class="chip" data-filter-type="vertical" data-value="BrokerTech">BrokerTech</button><button class="chip" data-filter-type="vertical" data-value="Insurtech">Insurtech</button><button class="chip" data-filter-type="vertical" data-value="Health Insurance / Payer">Health Insurance / Payer</button><button class="chip" data-filter-type="vertical" data-value="Healthcare / Provider &amp; Clinical">Healthcare / Provider &amp; Clinical</button>
+    </div>
+    <div class="chip-row" id="lensChips">
+      <button class="chip chip-lens active" data-filter-type="lens" data-value="All">All Lenses</button>
+      <button class="chip chip-lens" data-filter-type="lens" data-value="M&amp;A">M&amp;A</button><button class="chip chip-lens" data-filter-type="lens" data-value="Investments &amp; Funding">Investments &amp; Funding</button><button class="chip chip-lens" data-filter-type="lens" data-value="Technology &amp; AI">Technology &amp; AI</button><button class="chip chip-lens" data-filter-type="lens" data-value="Market Economics">Market Economics</button><button class="chip chip-lens" data-filter-type="lens" data-value="Regulatory &amp; Policy">Regulatory &amp; Policy</button><button class="chip chip-lens" data-filter-type="lens" data-value="People &amp; Leadership">People &amp; Leadership</button>
+    </div>
+  </div>
+</div>
+
+<nav class="toc"><a href="#v-life-annuities" class="toc-link">Life &amp; Annuities</a><a href="#v-retirement" class="toc-link">Retirement</a><a href="#v-investments" class="toc-link">Investments</a><a href="#v-wealth-management" class="toc-link">Wealth Management</a><a href="#v-property-casualty" class="toc-link">Property &amp; Casualty</a><a href="#v-brokers-mga-ga" class="toc-link">Brokers &amp; MGA/GA</a><a href="#v-insurtech" class="toc-link">Insurtech</a><a href="#v-health-insurance-payer" class="toc-link">Health Insurance / Payer</a><a href="#v-healthcare-provider-clinical" class="toc-link">Healthcare / Provider &amp; Clinical</a></nav>
+
+<main class="main" id="main">
+    <section class="vertical-section" id="v-life-annuities" data-vertical-section="Life &amp; Annuities">
+      <div class="section-head">
+        <h2 class="section-title">Life &amp; Annuities</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="M&amp;A" data-geo="APAC" data-search="a japanese life insurer that lost hsbc life singapore to allianz still wants scale there months after allianz agreed to buy hsbc&#x27;s singapore insurance arm for about us$2.1 billion, a rival osaka-based insurer is signalling continued appetite for singapore and u.s. deals. singapore life market insurance business">
+          <div class="card-tags">
+            <span class="tag tag-topic">Singapore Life Market</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-10-16</div>
+          <h3 class="card-headline">A Japanese life insurer that lost HSBC Life Singapore to Allianz still wants scale there</h3>
+          <p class="card-summary">Months after Allianz agreed to buy HSBC&#x27;s Singapore insurance arm for about US$2.1 billion, a rival Osaka-based insurer is signalling continued appetite for Singapore and U.S. deals.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Business</span>
+            <a class="card-link" href="https://www.insurancebusinessmag.com/asia/news/breaking-news/giant-japanese-insurer-looking-south-and-to-the-us-for-deals-593771.aspx" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Market Economics" data-geo="India" data-search="lic reports q2 fy27 results on nov 5 after october share slide of about 7% the state insurer&#x27;s board meets this week; the prior quarter showed net profit up 23% and value of new business up 61%. insurer results goodreturns">
+          <div class="card-tags">
+            <span class="tag tag-topic">Insurer Results</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">India</span>
+          </div>
+          <div class="card-date">2026-11</div>
+          <h3 class="card-headline">LIC reports Q2 FY27 results on Nov 5 after October share slide of about 7%</h3>
+          <p class="card-summary">The state insurer&#x27;s board meets this week; the prior quarter showed net profit up 23% and value of new business up 61%.</p>
+          <div class="card-footer">
+            <span class="card-source">Goodreturns</span>
+            <a class="card-link" href="https://www.goodreturns.in/personal-finance/lic-q2-results-fy27-soon-board-meeting-date-out-lic-check-q2-earnings-outlook-as-shares-fall-1543033.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Life &amp; Annuities" data-lens="Market Economics" data-geo="United States" data-search="limra: u.s. annuity sales set another quarterly record in q2 2026 the trade body reports a new record above $120 billion for the quarter and a record first half; the q3 data has not yet been published. landmark item, older than a week. annuity sales limra">
+          <div class="card-tags">
+            <span class="tag tag-topic">Annuity Sales</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-07</div>
+          <h3 class="card-headline">LIMRA: U.S. annuity sales set another quarterly record in Q2 2026</h3>
+          <p class="card-summary">The trade body reports a new record above $120 billion for the quarter and a record first half; the Q3 data has not yet been published. Landmark item, older than a week.</p>
+          <div class="card-footer">
+            <span class="card-source">LIMRA</span>
+            <a class="card-link" href="https://www.limra.com/en/newsroom/news-releases/2026/limra-u.s.-annuity-sales-set-new-quarterly-record-totaling-$123.9-billion-in-the-second-quarter-of-2026/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-retirement" data-vertical-section="Retirement">
+      <div class="section-head">
+        <h2 class="section-title">Retirement</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Retirement" data-lens="Regulatory &amp; Policy" data-geo="United States" data-search="dol&#x27;s proposed fiduciary safe harbor for alternative assets in 401(k) plans proposed march 30, the rule offers a presumption of prudence for fiduciaries following a documented process, including independent valuation of illiquid holdings, without mandating alternatives. landmark item; final status not confirmed. alternatives in 401(k) freshfields">
+          <div class="card-tags">
+            <span class="tag tag-topic">Alternatives in 401(k)</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-04-01</div>
+          <h3 class="card-headline">DOL&#x27;s proposed fiduciary safe harbor for alternative assets in 401(k) plans</h3>
+          <p class="card-summary">Proposed March 30, the rule offers a presumption of prudence for fiduciaries following a documented process, including independent valuation of illiquid holdings, without mandating alternatives. Landmark item; final status not confirmed.</p>
+          <div class="card-footer">
+            <span class="card-source">Freshfields</span>
+            <a class="card-link" href="https://www.freshfields.com/en/our-thinking/briefings/2026/04/recent-dol-rule-proposal-could-expand-retirement-account-access-to-alternative-investments" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Retirement" data-lens="Market Economics" data-geo="United States" data-search="pep adoption jumps: 10,797 employers now in 401(k)/403(b) pooled plans versus 7,454 a year ago plansponsor&#x27;s 2026 recordkeeping survey also finds 36 recordkeepers covering about 97% of the dc market. publication date not stated in the result. pooled plans plansponsor">
+          <div class="card-tags">
+            <span class="tag tag-topic">Pooled Plans</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026</div>
+          <h3 class="card-headline">PEP adoption jumps: 10,797 employers now in 401(k)/403(b) pooled plans versus 7,454 a year ago</h3>
+          <p class="card-summary">PLANSPONSOR&#x27;s 2026 recordkeeping survey also finds 36 recordkeepers covering about 97% of the DC market. Publication date not stated in the result.</p>
+          <div class="card-footer">
+            <span class="card-source">PLANSPONSOR</span>
+            <a class="card-link" href="https://www.plansponsor.com/surveys/2026-recordkeeping-survey/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-investments" data-vertical-section="Investments">
+      <div class="section-head">
+        <h2 class="section-title">Investments</h2>
+        <span class="section-count">1 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Investments" data-lens="Market Economics" data-geo="United States" data-search="fed holds at 3.75%-4.00% in a 10-2 vote as long-end yields stay elevated reports say the october 28 hold followed a september hike, with the 30-year treasury having touched its highest level since 2002 earlier this autumn, which matters for insurer reinvestment yields. rates &amp; yields admirals">
+          <div class="card-tags">
+            <span class="tag tag-topic">Rates &amp; Yields</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-10-28</div>
+          <h3 class="card-headline">Fed holds at 3.75%-4.00% in a 10-2 vote as long-end yields stay elevated</h3>
+          <p class="card-summary">Reports say the October 28 hold followed a September hike, with the 30-year Treasury having touched its highest level since 2002 earlier this autumn, which matters for insurer reinvestment yields.</p>
+          <div class="card-footer">
+            <span class="card-source">Admirals</span>
+            <a class="card-link" href="https://admiralmarkets.com/analytics/traders-blog/fomc-october-2026-fed-holds-rates" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-wealth-management" data-vertical-section="Wealth Management">
+      <div class="section-head">
+        <h2 class="section-title">Wealth Management</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Wealth Management" data-lens="M&amp;A" data-geo="United States" data-search="savant adds a third new york office with socha, its ninth deal of 2026 the deal keeps savant the most active ria buyer of the year. ria consolidation investmentnews">
+          <div class="card-tags">
+            <span class="tag tag-topic">RIA Consolidation</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09</div>
+          <h3 class="card-headline">Savant adds a third New York office with Socha, its ninth deal of 2026</h3>
+          <p class="card-summary">The deal keeps Savant the most active RIA buyer of the year.</p>
+          <div class="card-footer">
+            <span class="card-source">InvestmentNews</span>
+            <a class="card-link" href="https://www.investmentnews.com/ria-news/savant-wealth-management-expands-in-new-york-with-socha-acquisition/268046" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Wealth Management" data-lens="M&amp;A" data-geo="United States" data-search="sequoia and allworth sign fresh deals as ria consolidation continues sequoia bought illinois-based all star financial, roughly $1.3 billion in assets, its second acquisition in two months. ria consolidation investmentnews">
+          <div class="card-tags">
+            <span class="tag tag-topic">RIA Consolidation</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09</div>
+          <h3 class="card-headline">Sequoia and Allworth sign fresh deals as RIA consolidation continues</h3>
+          <p class="card-summary">Sequoia bought Illinois-based All Star Financial, roughly $1.3 billion in assets, its second acquisition in two months.</p>
+          <div class="card-footer">
+            <span class="card-source">InvestmentNews</span>
+            <a class="card-link" href="https://www.investmentnews.com/ria-news/ria-consolidation-rolls-on-as-sequoia-and-allworth-ink-fresh-deals/268039" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-property-casualty" data-vertical-section="Property &amp; Casualty">
+      <div class="section-head">
+        <h2 class="section-title">Property &amp; Casualty</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="Global" data-search="global commercial insurance rates slip 5% in q3, a ninth straight quarterly decline marsh&#x27;s index shows property pricing down about 10% globally while u.s. casualty rose roughly 6%. the broker sees early signs of stabilization, with underwriters still wary of catastrophe, casualty, d&amp;o and ai-linked cyber exposures. commercial pricing marsh">
+          <div class="card-tags">
+            <span class="tag tag-topic">Commercial Pricing</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-10-21</div>
+          <h3 class="card-headline">Global commercial insurance rates slip 5% in Q3, a ninth straight quarterly decline</h3>
+          <p class="card-summary">Marsh&#x27;s index shows property pricing down about 10% globally while U.S. casualty rose roughly 6%. The broker sees early signs of stabilization, with underwriters still wary of catastrophe, casualty, D&amp;O and AI-linked cyber exposures.</p>
+          <div class="card-footer">
+            <span class="card-source">Marsh</span>
+            <a class="card-link" href="https://www.marsh.com/en/about/media/global-commercial-insurance-falls-5-percent-q3-2026.html" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="Market Economics" data-geo="United States" data-search="crc group: property price cuts are easing even as most accounts renew flat or lower roughly 91-93% of crc&#x27;s property accounts renewed flat or at reduced rates in q3, but the pace of reductions has begun to moderate. property renewals reinsurance news">
+          <div class="card-tags">
+            <span class="tag tag-topic">Property Renewals</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-10</div>
+          <h3 class="card-headline">CRC Group: property price cuts are easing even as most accounts renew flat or lower</h3>
+          <p class="card-summary">Roughly 91-93% of CRC&#x27;s property accounts renewed flat or at reduced rates in Q3, but the pace of reductions has begun to moderate.</p>
+          <div class="card-footer">
+            <span class="card-source">Reinsurance News</span>
+            <a class="card-link" href="https://www.reinsurancene.ws/property-renewal-rate-reductions-begin-to-moderate-in-q326-crc-group/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Property &amp; Casualty" data-lens="M&amp;A" data-geo="APAC" data-search="tokio marine reportedly weighs a mega-bid for australian insurers iag or suncorp press reports say the japanese group is exploring an acquisition worth upwards of a$20 billion in australia. these are reports of talks, not an announced deal. cross-border deals bloomberg government">
+          <div class="card-tags">
+            <span class="tag tag-topic">Cross-border Deals</span>
+            <span class="tag tag-lens">M&amp;A</span>
+            <span class="tag tag-geo">APAC</span>
+          </div>
+          <div class="card-date">2026-08</div>
+          <h3 class="card-headline">Tokio Marine reportedly weighs a mega-bid for Australian insurers IAG or Suncorp</h3>
+          <p class="card-summary">Press reports say the Japanese group is exploring an acquisition worth upwards of A$20 billion in Australia. These are reports of talks, not an announced deal.</p>
+          <div class="card-footer">
+            <span class="card-source">Bloomberg Government</span>
+            <a class="card-link" href="https://news.bgov.com/esg/tokio-marine-weighs-suncorp-iag-as-acquisition-targets-ft-says" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-brokers-mga-ga" data-vertical-section="Brokers &amp; MGA/GA">
+      <div class="section-head">
+        <h2 class="section-title">Brokers &amp; MGA/GA</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="Market Economics" data-geo="United States" data-search="gallagher holds 5% organic growth while brown &amp; brown slows as soft market bites q3 results show diversified brokers riding out softer pricing; brown &amp; brown printed organic growth near 1.2% and saw its shares fall, making it the clear laggard. broker earnings insurance business">
+          <div class="card-tags">
+            <span class="tag tag-topic">Broker Earnings</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-10</div>
+          <h3 class="card-headline">Gallagher holds 5% organic growth while Brown &amp; Brown slows as soft market bites</h3>
+          <p class="card-summary">Q3 results show diversified brokers riding out softer pricing; Brown &amp; Brown printed organic growth near 1.2% and saw its shares fall, making it the clear laggard.</p>
+          <div class="card-footer">
+            <span class="card-source">Insurance Business</span>
+            <a class="card-link" href="https://www.insurancebusinessmag.com/us/news/breaking-news/gallagher-posts-5-organic-growth-as-brown-and-brown-slows-595591.aspx" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Brokers &amp; MGA/GA" data-lens="Market Economics" data-geo="Global" data-search="aon beats on q3 with 6% organic growth and wider margins aon&#x27;s third quarter showed commercial risk growing about 7% organically on new business and retention, and the shares rose roughly 5% on the print. broker earnings tikr">
+          <div class="card-tags">
+            <span class="tag tag-topic">Broker Earnings</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-10</div>
+          <h3 class="card-headline">Aon beats on Q3 with 6% organic growth and wider margins</h3>
+          <p class="card-summary">Aon&#x27;s third quarter showed commercial risk growing about 7% organically on new business and retention, and the shares rose roughly 5% on the print.</p>
+          <div class="card-footer">
+            <span class="card-source">TIKR</span>
+            <a class="card-link" href="https://www.tikr.com/blog/aon-soars-5-on-third-quarter-beat-with-6-organic-growth-and-wider-margins" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-insurtech" data-vertical-section="Insurtech">
+      <div class="section-head">
+        <h2 class="section-title">Insurtech</h2>
+        <span class="section-count">2 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Insurtech" data-lens="Investments &amp; Funding" data-geo="United States" data-search="embedded p&amp;c start-up slingshot exits stealth with a $27m seed round rally ventures and skyward co-led the round for the minneapolis company, which builds infrastructure so software platforms, mgas and distributors can sell policies at checkout. embedded insurance beinsure">
+          <div class="card-tags">
+            <span class="tag tag-topic">Embedded Insurance</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-10-22</div>
+          <h3 class="card-headline">Embedded P&amp;C start-up Slingshot exits stealth with a $27M seed round</h3>
+          <p class="card-summary">Rally Ventures and Skyward co-led the round for the Minneapolis company, which builds infrastructure so software platforms, MGAs and distributors can sell policies at checkout.</p>
+          <div class="card-footer">
+            <span class="card-source">Beinsure</span>
+            <a class="card-link" href="https://beinsure.com/news/insurtech-slingshot-insurance-raises-27mn/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Insurtech" data-lens="Investments &amp; Funding" data-geo="Global" data-search="ai companies took about 99% of insurtech funding in q2 as early-stage deals cooled gallagher re data show $2.44bn raised across 95 deals, the strongest quarter since 2022, while early-stage funding fell by more than half from the prior quarter. the q3 edition does not yet appear to be out. funding trends risk &amp; insurance">
+          <div class="card-tags">
+            <span class="tag tag-topic">Funding Trends</span>
+            <span class="tag tag-lens">Investments &amp; Funding</span>
+            <span class="tag tag-geo">Global</span>
+          </div>
+          <div class="card-date">2026-08</div>
+          <h3 class="card-headline">AI companies took about 99% of insurtech funding in Q2 as early-stage deals cooled</h3>
+          <p class="card-summary">Gallagher Re data show $2.44bn raised across 95 deals, the strongest quarter since 2022, while early-stage funding fell by more than half from the prior quarter. The Q3 edition does not yet appear to be out.</p>
+          <div class="card-footer">
+            <span class="card-source">Risk &amp; Insurance</span>
+            <a class="card-link" href="https://riskandinsurance.com/ai-dominates-insurtech-funding-in-q2-as-early-stage-deals-cool-sharply/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-health-insurance-payer" data-vertical-section="Health Insurance / Payer">
+      <div class="section-head">
+        <h2 class="section-title">Health Insurance / Payer</h2>
+        <span class="section-count">3 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Regulatory &amp; Policy" data-geo="United States" data-search="cms expects medicare advantage premiums to fall more than 16% in 2027 average ma premiums are projected to drop sharply and enrollment to ease to about 34 million, with medicare open enrollment running through december 7. medicare advantage fierce healthcare">
+          <div class="card-tags">
+            <span class="tag tag-topic">Medicare Advantage</span>
+            <span class="tag tag-lens">Regulatory &amp; Policy</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-09-29</div>
+          <h3 class="card-headline">CMS expects Medicare Advantage premiums to fall more than 16% in 2027</h3>
+          <p class="card-summary">Average MA premiums are projected to drop sharply and enrollment to ease to about 34 million, with Medicare open enrollment running through December 7.</p>
+          <div class="card-footer">
+            <span class="card-source">Fierce Healthcare</span>
+            <a class="card-link" href="https://www.fiercehealthcare.com/payers/cms-projects-medicare-advantage-premiums-decline-16-2027" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States" data-search="unitedhealth lifts 2026 profit outlook for a third time after q3 beat third-quarter revenue reached $112.7 billion with a medical cost ratio of 88.4%, and full-year adjusted eps is now expected to be at least $20.50. payer earnings sec (unitedhealth 8-k)">
+          <div class="card-tags">
+            <span class="tag tag-topic">Payer Earnings</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-10</div>
+          <h3 class="card-headline">UnitedHealth lifts 2026 profit outlook for a third time after Q3 beat</h3>
+          <p class="card-summary">Third-quarter revenue reached $112.7 billion with a medical cost ratio of 88.4%, and full-year adjusted EPS is now expected to be at least $20.50.</p>
+          <div class="card-footer">
+            <span class="card-source">SEC (UnitedHealth 8-K)</span>
+            <a class="card-link" href="https://www.sec.gov/Archives/edgar/data/0000731766/000073176626000255/earningsrelease3q26unh.htm" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+        <article class="card" data-vertical="Health Insurance / Payer" data-lens="Market Economics" data-geo="United States" data-search="centene posts a q3 gaap loss on $50.6b revenue but raises its full-year floor revenue grew on medicare strength and the insurer trimmed its health benefits ratio guidance, while the quarter itself showed a small gaap loss. payer earnings fierce healthcare">
+          <div class="card-tags">
+            <span class="tag tag-topic">Payer Earnings</span>
+            <span class="tag tag-lens">Market Economics</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-10</div>
+          <h3 class="card-headline">Centene posts a Q3 GAAP loss on $50.6B revenue but raises its full-year floor</h3>
+          <p class="card-summary">Revenue grew on Medicare strength and the insurer trimmed its health benefits ratio guidance, while the quarter itself showed a small GAAP loss.</p>
+          <div class="card-footer">
+            <span class="card-source">Fierce Healthcare</span>
+            <a class="card-link" href="https://www.fiercehealthcare.com/payers/centene-posts-71m-loss-506b-revenue-q3" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="vertical-section" id="v-healthcare-provider-clinical" data-vertical-section="Healthcare / Provider &amp; Clinical">
+      <div class="section-head">
+        <h2 class="section-title">Healthcare / Provider &amp; Clinical</h2>
+        <span class="section-count">1 stories</span>
+      </div>
+      <div class="card-grid">
+        <article class="card" data-vertical="Healthcare / Provider &amp; Clinical" data-lens="Technology &amp; AI" data-geo="United States" data-search="health system ceos name their biggest ai fears as ambient ai gets measured becker&#x27;s roundup covers executive concerns about ai, northwell&#x27;s work making ambient ai measurable, and an fbi warning on hackers targeting u.s. hospitals. health system ai becker&#x27;s hospital review">
+          <div class="card-tags">
+            <span class="tag tag-topic">Health System AI</span>
+            <span class="tag tag-lens">Technology &amp; AI</span>
+            <span class="tag tag-geo">United States</span>
+          </div>
+          <div class="card-date">2026-08-27</div>
+          <h3 class="card-headline">Health system CEOs name their biggest AI fears as ambient AI gets measured</h3>
+          <p class="card-summary">Becker&#x27;s roundup covers executive concerns about AI, Northwell&#x27;s work making ambient AI measurable, and an FBI warning on hackers targeting U.S. hospitals.</p>
+          <div class="card-footer">
+            <span class="card-source">Becker&#x27;s Hospital Review</span>
+            <a class="card-link" href="https://www.beckershospitalreview.com/newsletters/fbi-chinese-hackers-targeted-us-hospitals-ceos-biggest-ai-fears-8-epic-updates-how-northwell-made-ambient-ai-measurable-4-cio-exits/" target="_blank" rel="noopener noreferrer">Read article &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  <div class="no-results" id="noResults">No stories match your filters. Try clearing search or selecting &ldquo;All&rdquo;.</div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>Disclaimer:</strong> This dashboard is AI-compiled from public web search results across insurance, healthcare, and wealth management sources. Headlines and summaries are paraphrased for this internal briefing. Verify details against the original source before citing externally &mdash; use the &ldquo;Read article&rdquo; link on each card.</p>
+    <p>Historical coverage lives in <code>cockpit-data/story-log.csv</code> in this repository, with a rolling last-30-day export at <code>cockpit-data/story-log-last30days.xlsx</code>.</p>
+  </div>
+</footer>
+
+<script>
+  const state = { vertical: 'All', lens: 'All', geo: 'All', search: '' };
+
+  function applyFilters() {
+    const cards = document.querySelectorAll('.card');
+    let anyVisible = false;
+    const sectionCounts = {};
+
+    cards.forEach(card => {
+      const v = card.dataset.vertical, l = card.dataset.lens, g = card.dataset.geo, s = card.dataset.search;
+      const matchV = state.vertical === 'All' || v === state.vertical;
+      const matchL = state.lens === 'All' || l === state.lens;
+      const matchG = state.geo === 'All' || g === state.geo;
+      const matchS = state.search === '' || s.includes(state.search);
+      const visible = matchV && matchL && matchG && matchS;
+      card.style.display = visible ? '' : 'none';
+      if (visible) {
+        anyVisible = true;
+        sectionCounts[v] = (sectionCounts[v] || 0) + 1;
+      }
+    });
+
+    document.querySelectorAll('.vertical-section').forEach(sec => {
+      const v = sec.dataset.verticalSection;
+      const count = sectionCounts[v] || 0;
+      sec.style.display = count > 0 ? '' : 'none';
+      const countEl = sec.querySelector('.section-count');
+      if (countEl) countEl.textContent = count + (count === 1 ? ' story' : ' stories');
+    });
+
+    document.getElementById('noResults').classList.toggle('show', !anyVisible);
+  }
+
+  document.querySelectorAll('#verticalChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#verticalChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.vertical = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('#lensChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#lensChips .chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.lens = btn.dataset.value;
+      applyFilters();
+    });
+  });
+
+  document.getElementById('geoSelect').addEventListener('change', e => {
+    state.geo = e.target.value;
+    applyFilters();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    state.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+</script>
+</body>
+</html>
